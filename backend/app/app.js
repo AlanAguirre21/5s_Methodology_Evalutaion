@@ -1,0 +1,25 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import connectDB from './config/db.js';
+import areaRoutes from './routes/area.routes.js';
+import auditRoutes from './routes/audit.routes.js';
+import { notFound, errorHandler } from './middleware/errorHandler.js';
+
+const app = express();
+
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN }))
+app.use(express.json());
+
+app.use('/api/areas', areaRoutes);
+app.use('/api/audits', auditRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 3000;
+
+await connectDB();
+app.listen(PORT, () => 
+    console.log(`Server running on port ${PORT}`)
+);

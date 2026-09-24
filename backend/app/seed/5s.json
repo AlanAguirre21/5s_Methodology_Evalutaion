@@ -1,0 +1,32 @@
+{
+  "key": "5s",
+  "version": 1,
+  "title": "Auditoría 5S",
+  "sections": [
+    { "key": "seiri", "name": "Seiri (Clasificar)", "weight": 1, "questions": [
+      { "text": "¿Se eliminaron los objetos innecesarios del área?" },
+      { "text": "¿Existe un área designada para artículos en espera de decisión?" }
+    ]},
+    { "key": "seiton", "name": "Seiton (Ordenar)", "weight": 1, "questions": [
+      { "text": "¿Cada herramienta tiene un lugar asignado e identificado?" },
+      { "text": "¿Los pasillos y rutas están delimitados?" }
+    ]},
+    { "key": "seiso", "name": "Seiso (Limpiar)", "weight": 1, "questions": [
+      { "text": "¿El área está libre de polvo, basura y derrames?" },
+      { "text": "¿Existe un programa de limpieza visible?" }
+    ]},
+    { "key": "seiketsu", "name": "Seiketsu (Estandarizar)", "weight": 1, "questions": [
+      { "text": "¿Hay estándares visuales documentados para el área?" },
+      { "text": "¿El personal conoce los estándares?" }
+    ]},
+    { "key": "shitsuke", "name": "Shitsuke (Disciplina)", "weight": 1, "questions": [
+      { "text": "¿Se realizan auditorías de 5S con regularidad?" },
+      { "text": "¿Se da seguimiento a las acciones correctivas?" }
+    ]}
+  ],
+  "results": [
+    { "min": 21, "text": "Excelente" },
+    { "min": 15, "text": "Bien" },
+    { "min": 0,  "text": "Deficiente" }
+  ]
+}
