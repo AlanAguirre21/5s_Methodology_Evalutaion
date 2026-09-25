@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import Questionnaire from '../models/questionnaire.js';
-import Area from '../models/area.js';
-import data from './5s.json' with{ type: 'json' };
+import Questionnaire from '../models/Questionnaire.js';
+import Area from '../models/Area.js';
+import floor from './floor.json' with{ type: 'json' };
+//import data from './office.json' with{ type: 'json' };
 
-const AREAS = ['Almacén', 'Producción', 'Mantenimiento'];   // replace with your real areas
+const QUESTIONNAIRES = [piso, oficina];
+const AREAS = ['Almacén', 'Producción', 'Mantenimiento'];  
 const REQUIRED = ['seiri', 'seiton', 'seiso', 'seiketsu', 'shitsuke'];
 
 function validate(q) {
@@ -20,8 +22,9 @@ function validate(q) {
   }
 }
 
-
-try {
+for (const data of QUESTIONNAIRES) {
+  validate(data);
+  try {
   validate(data);
   await mongoose.connect(process.env.MONGO_URI);
 
@@ -37,9 +40,10 @@ try {
     await Area.updateOne({ name }, { $setOnInsert: { name } }, { upsert: true });
   }
   console.log(`Areas ensured: ${AREAS.join(', ')}`);
-} catch (err) {
+  } catch (err) {
   console.error('Seed failed:', err.message);
   process.exitCode = 1;
-} finally {
+  } finally {
   await mongoose.disconnect();
+  }
 }

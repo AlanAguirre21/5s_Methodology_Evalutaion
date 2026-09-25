@@ -10,6 +10,6 @@ export async function getState(req, res)  {
 }
 
 export async function answer(req, res) {
-  const { index, answer } = req.body;
-  res.json(await auditService.answer(req.params.id, index, answer));
+  const { index, answer, deviation } = req.body;
+  res.json(await auditService.answer(req.params.id, index, answer, deviation));
 }

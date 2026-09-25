@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import areaRoutes from './routes/area.routes.js';
 import auditRoutes from './routes/audit.routes.js';
+import questionnaireRoutes from './routes/questionnaire.routes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/api/areas', areaRoutes);
 app.use('/api/audits', auditRoutes);
+app.use('/api/questionnaires', questionnaireRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -14,6 +14,13 @@ function flatten(questionnaire) {
 
 function buildState(audit, questionnaire, areaName) {
   const questions = flatten(questionnaire);
+  const byId = new Map(questions.map(q => [q.id.toString(), q]));
+
+  const history = audit.answers.map(a => {
+    const q = byId.get(a.question.toString());
+    return { question: q.text, section: q.section, answer: a.answer, desviation: a.desviation};
+  });
+
   const base = {
     auditId: audit._id,
     title: questionnaire.title,
@@ -79,9 +86,12 @@ export async function getState(id) {
   return buildState(audit, questionnaire, area.name);
 }
 
-export async function answer(id, index, value) {
+export async function answer(id, index, value, desviation) {
   if (typeof value !== 'boolean') throw new HttpError(400, 'answer must be true or false');
   if (!Number.isInteger(index))  throw new HttpError(400, 'index must be an integer');
+  if (value === false && (typeof deviation !== 'string' || !deviation.trim())) {
+    throw new HttpError(400, 'deviation is required when answer is No');
+  }
 
   const { audit, questionnaire, area } = await loadAudit(id);
   const questions = flatten(questionnaire);
@@ -89,7 +99,11 @@ export async function answer(id, index, value) {
   if (audit.status === 'completed')   throw new HttpError(409, 'Audit already completed');
   if (index !== audit.answers.length) throw new HttpError(409, 'Question index mismatch');
 
-  audit.answers.push({ question: questions[index].id, answer: value });
+  audit.answers.push({ 
+    question: questions[index].id, 
+    answer: value,
+    deviation: value ? null :deviation.trim(),
+   });
 
   if (audit.answers.length === questions.length) {
     const { sectionScores, score, result } = computeResult(questionnaire, audit.answers);

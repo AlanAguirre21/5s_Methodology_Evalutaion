@@ -3,6 +3,7 @@ import { Schema, model } from 'mongoose';
 const AnswerSchema = new Schema({
   question: { type: Schema.Types.ObjectId, required: true },
   answer:   { type: Boolean, required: true },
+  deviation: { type: String, trim: true, maxlength: 500, default: null },
 }, { _id: false });
 
 const SectionScoreSchema = new Schema({
