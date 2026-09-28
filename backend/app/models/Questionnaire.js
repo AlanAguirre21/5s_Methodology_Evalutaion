@@ -5,7 +5,7 @@ const QuestionSchema = new Schema({
 }); // Auto _id by default
 
 const SectionSchema = new Schema({
-    key: { type: String, required: true, enum: ['seiri', 'seiton', 'seiso', 'seiketsu', 'shitsuke'] },
+    key: { type: String, required: true, trim: true, match: /^[a-z0-9_]+$/ },  // 5S order is enforced per questionnaire in seed.js
     name: { type: String, required: true, trim: true },
     weight: { type: Number, default: 1, min: 0 },
     questions: {type: [QuestionSchema], required: true},
@@ -17,7 +17,7 @@ const ResultSchema = new Schema({
 }, {_id: false}); // Disable _id for subdocuments
 
 const QuestionnaireSchema = new Schema({
-    key: { type: String, required: true, unique: true, trim: true },
+    key: { type: String, required: true, trim: true },
     version: { type: Number, required: true, min: 1 },
     title: { type: String, required: true, trim: true },
     sections: { type: [SectionSchema], required: true },

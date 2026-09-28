@@ -18,7 +18,7 @@ function buildState(audit, questionnaire, areaName) {
 
   const history = audit.answers.map(a => {
     const q = byId.get(a.question.toString());
-    return { question: q.text, section: q.section, answer: a.answer, desviation: a.desviation};
+    return { question: q.text, section: q.section, answer: a.answer, deviation: a.deviation};
   });
 
   const base = {
@@ -26,7 +26,9 @@ function buildState(audit, questionnaire, areaName) {
     title: questionnaire.title,
     area: areaName,
     supervisor: audit.supervisor,
+    auditor: audit.auditor,
     total: questions.length,
+    history,
   };
 
   if (audit.status === 'completed') {
@@ -86,7 +88,7 @@ export async function getState(id) {
   return buildState(audit, questionnaire, area.name);
 }
 
-export async function answer(id, index, value, desviation) {
+export async function answer(id, index, value, deviation) {
   if (typeof value !== 'boolean') throw new HttpError(400, 'answer must be true or false');
   if (!Number.isInteger(index))  throw new HttpError(400, 'index must be an integer');
   if (value === false && (typeof deviation !== 'string' || !deviation.trim())) {
