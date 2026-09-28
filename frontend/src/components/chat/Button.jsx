@@ -9,7 +9,7 @@ const VARIANTS = {
 export default function Button({ variant = "default", className = "", ...props }) {
   return (
     <button
-      className={`rounded-control px-4 py-1.5 font-medium text-sm transition-all active:scale-95
+      className={`rounded-control px-4 py-2.5 font-medium text-sm transition-all active:scale-95
         disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
         ${VARIANTS[variant]} ${className}`}
       {...props}

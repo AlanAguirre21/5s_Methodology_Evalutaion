@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { getQuestionnaireOption } from '../constants/questionnaires.js';
-import { listAreas } from '../api/areas.js';
 import { startAudit } from '../api/audits.js';
 
 const fieldClass =
@@ -23,17 +22,12 @@ export default function AuditFormPage() {
   const { questionnaireKey } = useParams();
   const navigate = useNavigate();
 
-  const [areas, setAreas]           = useState(null);
-  const [areaId, setAreaId]         = useState('');
-  const [supervisor, setSupervisor] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError]           = useState(null);
-
-  useEffect(() => {
-    listAreas()
-      .then(setAreas)
-      .catch(e => { setAreas([]); setError(e.message); });
-  }, []);
+  const [centroCoste, setCentroCoste] = useState('');
+  const [area, setArea]               = useState('');
+  const [supervisor, setSupervisor]   = useState('');
+  const [creador, setCreador]         = useState('');
+  const [submitting, setSubmitting]   = useState(false);
+  const [error, setError]             = useState(null);
 
   const option = getQuestionnaireOption(questionnaireKey);
 
@@ -46,7 +40,7 @@ export default function AuditFormPage() {
   }
 
   const { title, Icon } = option;
-  const isValid = areaId !== '' && supervisor.trim() !== '';
+  const isValid = [centroCoste, area, supervisor, creador].every(v => v.trim() !== '');
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -55,7 +49,13 @@ export default function AuditFormPage() {
     setError(null);
 
     try {
-      const audit = await startAudit({ questionnaireKey, areaId, supervisor: supervisor.trim() });
+      const audit = await startAudit({
+        questionnaireKey,
+        costCenter: centroCoste.trim(),
+        area: area.trim(),
+        supervisor: supervisor.trim(),
+        creator: creador.trim(),
+      });
       navigate(`/audits/${audit.auditId}`);
     } catch (e) {
       setError(e.message);
@@ -74,23 +74,32 @@ export default function AuditFormPage() {
           <Icon size={20} />
         </span>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Nueva auditoría</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Nueva evaluación</p>
           <h1 className="text-xl font-bold text-slate-800">{title}</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-        <Field label="Área" htmlFor="area">
-          <select
-            id="area"
-            value={areaId}
-            onChange={e => setAreaId(e.target.value)}
-            disabled={areas === null}
+        <Field label="Centro de coste" htmlFor="centro_coste">
+          <input
+            id="centro_coste"
+            value={centroCoste}
+            onChange={e => setCentroCoste(e.target.value)}
+            maxLength={100}
+            placeholder="Centro de coste"
             className={fieldClass}
-          >
-            <option value="">{areas === null ? 'Cargando…' : 'Selecciona un área'}</option>
-            {areas?.map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
-          </select>
+          />
+        </Field>
+
+        <Field label="Área" htmlFor="area">
+          <input
+            id="area"
+            value={area}
+            onChange={e => setArea(e.target.value)}
+            maxLength={100}
+            placeholder="Área"
+            className={fieldClass}
+          />
         </Field>
 
         <Field label="Supervisor" htmlFor="supervisor">
@@ -100,6 +109,17 @@ export default function AuditFormPage() {
             onChange={e => setSupervisor(e.target.value)}
             maxLength={100}
             placeholder="Nombre del supervisor"
+            className={fieldClass}
+          />
+        </Field>
+
+        <Field label="Creador" htmlFor="creador">
+          <input
+            id="creador"
+            value={creador}
+            onChange={e => setCreador(e.target.value)}
+            maxLength={100}
+            placeholder="Nombre del creador"
             className={fieldClass}
           />
         </Field>

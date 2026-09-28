@@ -40,9 +40,9 @@ export default function ChatPage() {
       messages.push(<SectionDivider key={`s-${i}`} name={h.section.name} />);
       lastSection = h.section.key;
     }
-    messages.push(<MessageBubble key={`q-${i}`}>{h.question}</MessageBubble>);
+    messages.push(<MessageBubble key={`q-${i}`} from="bot">{h.question}</MessageBubble>);
     messages.push(
-      <MessageBubble key={`a-${i}`} variant={h.answer ? 'yes' : 'no'}>
+      <MessageBubble key={`a-${i}`} from="user" variant={h.answer ? 'yes' : 'no'}>
         {h.answer ? 'Sí' : (
           <>
             No
@@ -57,7 +57,7 @@ export default function ChatPage() {
     if (state.section.key !== lastSection) {
       messages.push(<SectionDivider key="s-current" name={state.section.name} />);
     }
-    messages.push(<MessageBubble key="q-current">{state.question.text}</MessageBubble>);
+    messages.push(<MessageBubble key="q-current" from="bot">{state.question.text}</MessageBubble>);
   }
 
   return (

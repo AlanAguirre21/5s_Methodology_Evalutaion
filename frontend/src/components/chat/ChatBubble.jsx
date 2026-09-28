@@ -1,4 +1,4 @@
-// Requiere: Avatar, Tailwind tokens
+import Avatar from '../Avatar.jsx';
 
 export default function ChatBubble({ from, children }) {
   const isBot = from === "bot";

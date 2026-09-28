@@ -20,9 +20,10 @@ export default function ResultPage() {
   }
 
     const details = [
+        ['Centro de coste', state.costCenter],
         ['Área', state.area],
         ['Supervisor', state.supervisor],
-        ['Auditor', state.auditor],
+        ['Creador', state.creator],
     ];
 
   return (

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import Questionnaire from '../models/Questionnaire.js';
 import Audit from '../models/Audit.js';
-import Area from '../models/Area.js';
 import HttpError from '../utils/HttpError.js';
 import { computeResult } from '../services/evaluation.service.js';
 
@@ -12,7 +11,7 @@ function flatten(questionnaire) {
   );
 }
 
-function buildState(audit, questionnaire, areaName) {
+function buildState(audit, questionnaire) {
   const questions = flatten(questionnaire);
   const byId = new Map(questions.map(q => [q.id.toString(), q]));
 
@@ -24,9 +23,10 @@ function buildState(audit, questionnaire, areaName) {
   const base = {
     auditId: audit._id,
     title: questionnaire.title,
-    area: areaName,
+    costCenter: audit.costCenter,
+    area: audit.area,
     supervisor: audit.supervisor,
-    auditor: audit.auditor,
+    creator: audit.creator,
     total: questions.length,
     history,
   };
@@ -52,40 +52,37 @@ async function loadAudit(id) {
   const audit = await Audit.findById(id);
   if (!audit) throw new HttpError(404, 'Audit not found');
 
-  const [questionnaire, area] = await Promise.all([
-    Questionnaire.findById(audit.questionnaire).lean(),
-    Area.findById(audit.area).lean(),
-  ]);
-  if (!questionnaire || !area) throw new HttpError(500, 'Audit references missing data');
+  const questionnaire = await Questionnaire.findById(audit.questionnaire).lean();
+  if (!questionnaire) throw new HttpError(500, 'Audit references missing questionnaire');
 
-  return { audit, questionnaire, area };
+  return { audit, questionnaire };
 }
 
-export async function start({ questionnaireKey, areaId, supervisor }) {
+// Required free-text fields of the audit header
+function requireText(value, name) {
+  if (typeof value !== 'string' || !value.trim()) throw new HttpError(400, `${name} is required`);
+  return value.trim();
+}
+
+export async function start({ questionnaireKey, costCenter, area, supervisor, creator }) {
   if (typeof questionnaireKey !== 'string') throw new HttpError(400, 'questionnaireKey is required');
-  if (!mongoose.isValidObjectId(areaId))    throw new HttpError(400, 'Invalid areaId');
-  if (typeof supervisor !== 'string' || !supervisor.trim()) {
-    throw new HttpError(400, 'supervisor is required');
-  }
+  const fields = {
+    costCenter: requireText(costCenter, 'costCenter'),
+    area:       requireText(area, 'area'),
+    supervisor: requireText(supervisor, 'supervisor'),
+    creator:    requireText(creator, 'creator'),
+  };
 
-  const [questionnaire, area] = await Promise.all([
-    Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean(),  // latest version
-    Area.findOne({ _id: areaId, active: true }).lean(),
-  ]);
+  const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
-  if (!area)          throw new HttpError(404, 'Area not found or inactive');
 
-  const audit = await Audit.create({
-    questionnaire: questionnaire._id,
-    area: area._id,
-    supervisor: supervisor.trim(),
-  });
-  return buildState(audit, questionnaire, area.name);
+  const audit = await Audit.create({ questionnaire: questionnaire._id, ...fields });
+  return buildState(audit, questionnaire);
 }
 
 export async function getState(id) {
-  const { audit, questionnaire, area } = await loadAudit(id);
-  return buildState(audit, questionnaire, area.name);
+  const { audit, questionnaire } = await loadAudit(id);
+  return buildState(audit, questionnaire);
 }
 
 export async function answer(id, index, value, deviation) {
@@ -95,7 +92,7 @@ export async function answer(id, index, value, deviation) {
     throw new HttpError(400, 'deviation is required when answer is No');
   }
 
-  const { audit, questionnaire, area } = await loadAudit(id);
+  const { audit, questionnaire } = await loadAudit(id);
   const questions = flatten(questionnaire);
 
   if (audit.status === 'completed')   throw new HttpError(409, 'Audit already completed');
@@ -117,5 +114,5 @@ export async function answer(id, index, value, deviation) {
   }
 
   await audit.save();
-  return buildState(audit, questionnaire, area.name);
+  return buildState(audit, questionnaire);
 }

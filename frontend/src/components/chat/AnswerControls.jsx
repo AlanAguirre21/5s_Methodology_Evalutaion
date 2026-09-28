@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Button from './Button.jsx';
 
 const MAX = 500;
 
@@ -9,22 +10,20 @@ export default function AnswerControls({ onAnswer, disabled }) {
   if (mode === 'choose') {
     return (
       <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
+        <Button
+          variant="success"
           onClick={() => onAnswer(true)}
           disabled={disabled}
-          className="rounded-xl bg-emerald-600 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
         >
           Sí
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="danger"
           onClick={() => setMode('deviation')}
           disabled={disabled}
-          className="rounded-xl bg-red-600 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50"
         >
           No
-        </button>
+        </Button>
       </div>
     );
   }
@@ -45,22 +44,20 @@ export default function AnswerControls({ onAnswer, disabled }) {
       />
       <p className="text-right text-xs text-slate-500">{text.length}/{MAX}</p>
       <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
+        <Button
+          variant="default"
           onClick={() => { setMode('choose'); setText(''); }}
           disabled={disabled}
-          className="rounded-xl bg-slate-200 py-3 font-semibold text-slate-700 hover:bg-slate-300 disabled:opacity-50"
         >
           Cancelar
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="warning"
           onClick={() => onAnswer(false, text.trim())}
           disabled={disabled || !text.trim()}
-          className="rounded-xl bg-red-600 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50"
         >
           Enviar
-        </button>
+        </Button>
       </div>
     </div>
   );
