@@ -1,0 +1,52 @@
+# 5S Project - Requirements
+
+# This is a Node.js project: packages are installed by npm from each package.json,
+# not from this file. This file lists what the project needs and the versions in use.
+# Versions are the ones currently installed (package.json allows compatible updates, "^").
+
+# ------------------------------------------------------------
+# Runtime (both)
+# ------------------------------------------------------------
+node>=24.21.0
+npm>=11.19.0
+mongodb-server        # MongoDB database, reachable through MONGO_URI
+
+# ============================================================
+# BACKEND  (backend/)
+# Install:  cd backend && npm install
+# Run:      npm run dev      (or: npm start)
+# Seed:     npm run seed     (loads questionnaires from app/seed)
+# Env (.env): MONGO_URI, PORT (default 3000), FRONTEND_ORIGIN
+# ============================================================
+
+# dependencies
+cors==2.8.6
+dotenv==18.0.3
+express==5.2.1
+mongodb==7.6.0
+mongoose==9.10.2
+
+# devDependencies
+nodemon==3.1.14
+
+# ============================================================
+# FRONTEND  (frontend/)
+# Install:  cd frontend && npm install
+# Run:      npm run dev      (Vite on http://localhost:5173, proxies /api to :3000)
+# Build:    npm run build
+# ============================================================
+
+# dependencies
+@tailwindcss/vite==4.3.3
+lucide-react==1.48.0
+react==19.3.0
+react-dom==19.3.0
+react-router==8.4.0
+tailwindcss==4.3.3
+
+# devDependencies
+@types/react==19.3.0
+@types/react-dom==19.3.0
+@vitejs/plugin-react==6.1.1
+oxlint==1.85.0
+vite==8.3.0
