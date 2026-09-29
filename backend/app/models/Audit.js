@@ -14,14 +14,12 @@ const SectionScoreSchema = new Schema({
 
 const AuditSchema = new Schema({
   questionnaire: { type: Schema.Types.ObjectId, ref: 'Questionnaire', required: true },
-  // Header fields: which ones are required depends on the questionnaire (see audit.service.js)
-  costCenter:    { type: String, trim: true, maxlength: 100 },     // piso
-  area:          { type: String, trim: true, maxlength: 100 },     // piso
-  supervisor:    { type: String, trim: true, maxlength: 100 },     // piso
-  department:    { type: String, trim: true, maxlength: 100 },     // oficina
-  contactPerson: { type: String, trim: true, maxlength: 100 },     // oficina
-  workshop:      { type: String, trim: true, maxlength: 100 },     // oficina
-  creator:       { type: String, required: true, trim: true, maxlength: 100 },
+  costCenter:    { type: String, trim: true, maxlength: 100 },     
+  area:          { type: String, trim: true, maxlength: 100 },    
+  supervisor:    { type: String, trim: true, maxlength: 100 },     
+  evaluatedPerson: { type: String, trim: true, maxlength: 100 },   
+  department:    { type: String, trim: true, maxlength: 100 },     
+  workshop:      { type: String, trim: true, maxlength: 100 },     
   answers:       { type: [AnswerSchema], default: [] },
   status:        { type: String, enum: ['in_progress', 'completed'], default: 'in_progress' },
   sectionScores: { type: [SectionScoreSchema], default: [] },

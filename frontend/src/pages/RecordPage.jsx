@@ -4,25 +4,12 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { listAudits } from '../api/audits.js';
-import { QUESTIONNAIRE_OPTIONS } from '../constants/questionnaires.js';
+import { QUESTIONNAIRE_OPTIONS, HEADER_FIELDS } from '../constants/questionnaires.js';
 
-// Header columns per questionnaire type (they match FloorForm / OfficeForm)
-const COLUMNS = {
-  piso: [
-    ['costCenter', 'Centro de coste'],
-    ['area', 'Área'],
-    ['supervisor', 'Supervisor'],
-    ['creator', 'Creador'],
-  ],
-  oficina: [
-    ['department', 'Área/Departamento'],
-    ['contactPerson', 'Persona de contacto'],
-    ['workshop', 'Taller'],
-    ['creator', 'Creador'],
-  ],
-};
+const COLUMNS = Object.fromEntries(
+  Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.map(f => [f.key, f.label])])
+);
 
-// Full class names so Tailwind can detect them
 const TAB_THEMES = {
   piso:    { active: 'bg-emerald-600 text-white shadow-sm', score: 'text-emerald-700' },
   oficina: { active: 'bg-amber-500 text-white shadow-sm',   score: 'text-amber-700' },
@@ -65,7 +52,6 @@ function AuditTable({ questionnaireKey, audits }) {
         <tbody className="divide-y divide-slate-100">
           {audits.map(a => {
             const done = a.status === 'completed';
-            const to = done ? `/audits/${a.auditId}/result` : `/audits/${a.auditId}`;
             return (
               <tr key={a.auditId} className="hover:bg-slate-50">
                 <td className="whitespace-nowrap px-4 py-3 text-slate-600">{dateFormat.format(new Date(a.completedAt ?? a.createdAt))}</td>
@@ -75,9 +61,16 @@ function AuditTable({ questionnaireKey, audits }) {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3"><StatusBadge audit={a} /></td>
                 <td className="px-4 py-3 text-right">
-                  <Link to={to} className="inline-flex items-center gap-0.5 whitespace-nowrap font-medium text-slate-600 hover:text-slate-900">
-                    {done ? 'Ver' : 'Continuar'} <ChevronRight size={16} />
-                  </Link>
+                  <div className="flex items-center justify-end gap-3 whitespace-nowrap">
+                    {!done && (
+                      <Link to={`/audits/${a.auditId}`} className="font-medium text-sky-700 hover:text-sky-900">
+                        Continuar
+                      </Link>
+                    )}
+                    <Link to={`/registro/${a.auditId}`} className="inline-flex items-center gap-0.5 font-medium text-slate-600 hover:text-slate-900">
+                      Ver evaluación <ChevronRight size={16} />
+                    </Link>
+                  </div>
                 </td>
               </tr>
             );
@@ -93,9 +86,9 @@ export default function RecordPage() {
   const tabParam = searchParams.get('tab');
   const tab = QUESTIONNAIRE_OPTIONS.some(o => o.key === tabParam) ? tabParam : QUESTIONNAIRE_OPTIONS[0].key;
 
-  const [audits, setAudits]     = useState(null);   // null = loading
+  const [audits, setAudits]     = useState(null);  
   const [error, setError]       = useState(null);
-  const [filters, setFilters]   = useState({});     // { field: value }; missing/'' = all
+  const [filters, setFilters]   = useState({});     
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage]         = useState(0);
 
@@ -103,7 +96,7 @@ export default function RecordPage() {
     let active = true;
     setAudits(null);
     setError(null);
-    setFilters({});   // each tab has its own columns and values
+    setFilters({});  
     setPage(0);
 
     listAudits(tab)
@@ -115,7 +108,6 @@ export default function RecordPage() {
 
   const columns = COLUMNS[tab];
 
-  // Distinct values per column, sorted, for each filter's options
   const options = useMemo(() => Object.fromEntries(columns.map(([key]) => [
     key,
     [...new Set((audits ?? []).map(a => a[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es', { numeric: true })),

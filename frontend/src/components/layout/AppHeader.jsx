@@ -21,11 +21,11 @@ export default function AppHeader() {
         </Link>
 
         <nav className="flex items-center gap-6">
-          <NavLink to="/registro" className={linkClass}>
-            Registro de evaluaciones
-          </NavLink>
           <NavLink to="/personas" className={linkClass}>
             Registro de personas
+          </NavLink>
+          <NavLink to="/registro" className={linkClass}>
+            Registro de evaluaciones
           </NavLink>
           {!isHome && (
             <NavLink to="/" end className={linkClass}>

@@ -17,3 +17,18 @@ export const QUESTIONNAIRE_OPTIONS = [
 
 export const getQuestionnaireOption = key =>
   QUESTIONNAIRE_OPTIONS.find(o => o.key === key);
+
+export const HEADER_FIELDS = {
+  piso: [
+    { key: 'costCenter', label: 'Centro de coste' },
+    { key: 'area',       label: 'Área' },
+    { key: 'supervisor', label: 'Supervisor' },
+    { key: 'evaluatedPerson', label: 'Persona evaluada' },
+  ],
+  oficina: [
+    { key: 'department',    label: 'Área/Departamento' },
+    { key: 'evaluatedPerson', label: 'Persona evaluada' },
+    { key: 'workshop',      label: 'Taller' },
+    { key: 'supervisor',    label: 'Supervisor' },
+  ],
+};

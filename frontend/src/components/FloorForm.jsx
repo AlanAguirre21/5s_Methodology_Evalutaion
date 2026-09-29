@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
+import CatalogSelect from './CatalogSelect.jsx';
 
 const fieldClass =
   'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30';
@@ -16,14 +17,14 @@ function Field({ label, htmlFor, children }) {
   );
 }
 
-export default function FloorForm({ option, onSubmit, submitting, error }) {
+export default function FloorForm({ option, catalog, onSubmit, submitting, error }) {
   const [centroCoste, setCentroCoste] = useState('');
   const [area, setArea]               = useState('');
   const [supervisor, setSupervisor]   = useState('');
-  const [creador, setCreador]         = useState('');
+  const [personaEvaluada, setPersonaEvaluada] = useState('');
 
   const { title, Icon } = option;
-  const isValid = [centroCoste, area, supervisor, creador].every(v => v.trim() !== '');
+  const isValid = [centroCoste, area, supervisor, personaEvaluada].every(v => v.trim() !== '');
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -32,7 +33,7 @@ export default function FloorForm({ option, onSubmit, submitting, error }) {
       costCenter: centroCoste.trim(),
       area: area.trim(),
       supervisor: supervisor.trim(),
-      creator: creador.trim(),
+      evaluatedPerson: personaEvaluada.trim(),
     });
   }
 
@@ -54,45 +55,49 @@ export default function FloorForm({ option, onSubmit, submitting, error }) {
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <Field label="Centro de coste" htmlFor="centro_coste">
-          <input
+          <CatalogSelect
             id="centro_coste"
             value={centroCoste}
-            onChange={e => setCentroCoste(e.target.value)}
-            maxLength={100}
-            placeholder="Centro de coste"
+            onChange={setCentroCoste}
+            entries={catalog?.costCenter ?? null}
+            placeholder="Selecciona centro de coste"
+            tab="piso"
             className={fieldClass}
           />
         </Field>
 
         <Field label="Área" htmlFor="area">
-          <input
+          <CatalogSelect
             id="area"
             value={area}
-            onChange={e => setArea(e.target.value)}
-            maxLength={100}
-            placeholder="Área"
+            onChange={setArea}
+            entries={catalog?.area ?? null}
+            placeholder="Selecciona área"
+            tab="piso"
             className={fieldClass}
           />
         </Field>
 
         <Field label="Supervisor" htmlFor="supervisor">
-          <input
+          <CatalogSelect
             id="supervisor"
             value={supervisor}
-            onChange={e => setSupervisor(e.target.value)}
-            maxLength={100}
-            placeholder="Nombre del supervisor"
+            onChange={setSupervisor}
+            entries={catalog?.supervisor ?? null}
+            placeholder="Selecciona supervisor"
+            tab="piso"
             className={fieldClass}
           />
         </Field>
 
-        <Field label="Creador" htmlFor="creador">
-          <input
-            id="creador"
-            value={creador}
-            onChange={e => setCreador(e.target.value)}
-            maxLength={100}
-            placeholder="Nombre del creador"
+        <Field label="Persona evaluada" htmlFor="persona_evaluada">
+          <CatalogSelect
+            id="persona_evaluada"
+            value={personaEvaluada}
+            onChange={setPersonaEvaluada}
+            entries={catalog?.evaluatedPerson ?? null}
+            placeholder="Selecciona persona evaluada"
+            tab="piso"
             className={fieldClass}
           />
         </Field>

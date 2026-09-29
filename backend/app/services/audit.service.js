@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import Questionnaire from '../models/Questionnaire.js';
 import Audit from '../models/Audit.js';
+import CatalogEntry from '../models/CatalogEntry.js';
 import HttpError from '../utils/HttpError.js';
+import { HEADER_FIELDS } from '../constants/headerFields.js';
 import { computeResult } from '../services/evaluation.service.js';
 
 // Sections → one ordered list; the audit index walks through it
@@ -28,9 +30,10 @@ function buildState(audit, questionnaire) {
     area: audit.area,
     supervisor: audit.supervisor,
     department: audit.department,
-    contactPerson: audit.contactPerson,
     workshop: audit.workshop,
-    creator: audit.creator,
+    evaluatedPerson: audit.evaluatedPerson,
+    createdAt: audit.createdAt,
+    completedAt: audit.completedAt,
     total: questions.length,
     history,
   };
@@ -62,12 +65,6 @@ async function loadAudit(id) {
   return { audit, questionnaire };
 }
 
-// Required free-text fields of the audit header, per questionnaire key
-const HEADER_FIELDS = {
-  piso:    ['costCenter', 'area', 'supervisor', 'creator'],
-  oficina: ['department', 'contactPerson', 'workshop', 'creator'],
-};
-
 function requireText(value, name) {
   if (typeof value !== 'string' || !value.trim()) throw new HttpError(400, `${name} is required`);
   return value.trim();
@@ -80,6 +77,13 @@ export async function start({ questionnaireKey, ...body }) {
 
   // Only the fields of this questionnaire are stored; anything else in the body is ignored
   const fields = Object.fromEntries(names.map(n => [n, requireText(body[n], n)]));
+
+  // Only values registered on the People page are accepted
+  const registered = await Promise.all(names.map(n =>
+    CatalogEntry.exists({ questionnaireKey, field: n, value: fields[n] })
+  ));
+  const missing = names.filter((n, i) => !registered[i]);
+  if (missing.length) throw new HttpError(400, `Not registered: ${missing.join(', ')}`);
 
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
@@ -116,9 +120,8 @@ export async function list(questionnaireKey) {
     area: a.area,
     supervisor: a.supervisor,
     department: a.department,
-    contactPerson: a.contactPerson,
     workshop: a.workshop,
-    creator: a.creator,
+    evaluatedPerson: a.evaluatedPerson,
   }));
 }
 

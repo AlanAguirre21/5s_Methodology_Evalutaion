@@ -25,9 +25,8 @@ export default function ResultPage() {
         ['Área', state.area],
         ['Supervisor', state.supervisor],
         ['Área/Departamento', state.department],
-        ['Persona de contacto', state.contactPerson],
         ['Taller', state.workshop],
-        ['Creador', state.creator],
+        ['Persona evaluada', state.evaluatedPerson],
     ].filter(([, value]) => value);
 
   return (
@@ -51,8 +50,15 @@ export default function ResultPage() {
         </dl>
 
         <Link
+          to={`/registro/${auditId}`}
+          className="mt-8 block rounded-xl bg-white py-3 text-center font-semibold text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50"
+        >
+          Ver mis respuestas
+        </Link>
+
+        <Link
           to="/"
-          className="mt-8 block rounded-xl bg-slate-800 py-3 text-center font-semibold text-white hover:bg-slate-900"
+          className="mt-3 block rounded-xl bg-slate-800 py-3 text-center font-semibold text-white hover:bg-slate-900"
         >
           Nueva auditoría
         </Link>

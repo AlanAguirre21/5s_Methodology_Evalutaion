@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
+import CatalogSelect from './CatalogSelect.jsx';
 
 const fieldClass =
   'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30';
@@ -16,25 +17,23 @@ function Field({ label, htmlFor, children }) {
   );
 }
 
-export default function OfficeForm({ option, onSubmit, submitting, error }) {
+export default function OfficeForm({ option, catalog, onSubmit, submitting, error }) {
   const [departamento, setDepartamento] = useState('');
   const [persona, setPersona]           = useState('');
   const [taller, setTaller]             = useState('');
-  const [supervisor, setSupervisor]             = useState('');
-  const [creador, setCreador]           = useState('');
+  const [supervisor, setSupervisor]     = useState('');
 
   const { title, Icon } = option;
-  const isValid = [departamento, persona, taller, creador].every(v => v.trim() !== '');
+  const isValid = [departamento, persona, taller, supervisor].every(v => v.trim() !== '');
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!isValid || submitting) return;
     onSubmit({
       department: departamento.trim(),
-      contactPerson: persona.trim(),
+      evaluatedPerson: persona.trim(),
       workshop: taller.trim(),
       supervisor: supervisor.trim(),
-      creator: creador.trim(),
     });
   }
 
@@ -56,56 +55,49 @@ export default function OfficeForm({ option, onSubmit, submitting, error }) {
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <Field label="Área/Departamento" htmlFor="departamento">
-          <input
+          <CatalogSelect
             id="departamento"
             value={departamento}
-            onChange={e => setDepartamento(e.target.value)}
-            maxLength={100}
-            placeholder="Área/Departamento"
+            onChange={setDepartamento}
+            entries={catalog?.department ?? null}
+            placeholder="Selecciona área/departamento"
+            tab="oficina"
             className={fieldClass}
           />
         </Field>
 
-        <Field label="Persona de contacto" htmlFor="persona">
-          <input
+        <Field label="Persona evaluada" htmlFor="persona">
+          <CatalogSelect
             id="persona"
             value={persona}
-            onChange={e => setPersona(e.target.value)}
-            maxLength={100}
-            placeholder="Persona de contacto"
+            onChange={setPersona}
+            entries={catalog?.evaluatedPerson ?? null}
+            placeholder="Selecciona persona evaluada"
+            tab="oficina"
             className={fieldClass}
           />
         </Field>
 
         <Field label="Taller" htmlFor="taller">
-          <input
+          <CatalogSelect
             id="taller"
             value={taller}
-            onChange={e => setTaller(e.target.value)}
-            maxLength={100}
-            placeholder="Taller"
+            onChange={setTaller}
+            entries={catalog?.workshop ?? null}
+            placeholder="Selecciona taller"
+            tab="oficina"
             className={fieldClass}
           />
         </Field>
 
         <Field label="Supervisor" htmlFor="supervisor">
-          <input
+          <CatalogSelect
             id="supervisor"
-            value={creador}
-            onChange={e => setSupervisor(e.target.value)}
-            maxLength={100}
-            placeholder="Nombre del supervisor"
-            className={fieldClass}
-          />
-        </Field>
-
-        <Field label="Creador" htmlFor="creador">
-          <input
-            id="creador"
-            value={creador}
-            onChange={e => setCreador(e.target.value)}
-            maxLength={100}
-            placeholder="Nombre del creador"
+            value={supervisor}
+            onChange={setSupervisor}
+            entries={catalog?.supervisor ?? null}
+            placeholder="Selecciona supervisor"
+            tab="oficina"
             className={fieldClass}
           />
         </Field>

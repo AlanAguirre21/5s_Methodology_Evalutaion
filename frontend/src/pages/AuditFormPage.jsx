@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import FloorForm from '../components/FloorForm.jsx';
 import OfficeForm from '../components/OfficeForm.jsx';
-import { getQuestionnaireOption } from '../constants/questionnaires.js';
+import { getQuestionnaireOption, HEADER_FIELDS } from '../constants/questionnaires.js';
 import { startAudit } from '../api/audits.js';
+import { listCatalog } from '../api/catalog.js';
 
-// questionnaireKey (from the HomePage card link) → form for that type
 const FORMS = {
   piso: FloorForm,
   oficina: OfficeForm,
@@ -17,10 +17,31 @@ export default function AuditFormPage() {
   const { questionnaireKey } = useParams();
   const navigate = useNavigate();
 
+  // Catalog tagged with its type, so the other type's lists are never shown while switching
+  const [catalogState, setCatalogState] = useState({ key: null, data: null });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState(null);
 
+  useEffect(() => {
+    const fields = HEADER_FIELDS[questionnaireKey];
+    if (!fields) return;
+    let active = true;
+    setError(null);        // don't carry an error over from the other type
+    setSubmitting(false);
+
+    listCatalog(questionnaireKey)
+      .then(c => { if (active) setCatalogState({ key: questionnaireKey, data: c }); })
+      .catch(e => {
+        if (!active) return;
+        setCatalogState({ key: questionnaireKey, data: Object.fromEntries(fields.map(f => [f.key, []])) });   // stop "Cargando…"
+        setError(e.message);
+      });
+
+    return () => { active = false; };
+  }, [questionnaireKey]);
+
   const option = getQuestionnaireOption(questionnaireKey);
+  const catalog = catalogState.key === questionnaireKey ? catalogState.data : null;   // null = loading
   const Form = FORMS[questionnaireKey];
 
   if (!option || !Form) {
@@ -44,6 +65,5 @@ export default function AuditFormPage() {
     }
   }
 
-  // key resets the form state when switching between types
-  return <Form key={questionnaireKey} option={option} onSubmit={handleSubmit} submitting={submitting} error={error} />;
+  return <Form key={questionnaireKey} option={option} catalog={catalog} onSubmit={handleSubmit} submitting={submitting} error={error} />;
 }

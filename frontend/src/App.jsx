@@ -5,6 +5,8 @@ import AuditFormPage from './pages/AuditFormPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
 import RecordPage from './pages/RecordPage.jsx';
+import PeoplePage from './pages/PeoplePage.jsx';
+import AuditDetailPage from './pages/AuditDetailPage.jsx';
 
 export default function App() {
   return (
@@ -13,6 +15,7 @@ export default function App() {
         <Route element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/registro" element={<RecordPage />} />
+        <Route path="/registro/:auditId" element={<AuditDetailPage />} />
         <Route path="/personas" element={<PeoplePage />} />
         <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
         <Route path="/audits/:auditId" element={<ChatPage />} />

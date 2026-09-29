@@ -31,8 +31,8 @@ export default function ChatPage() {
         </PageContainer>
         );
     }
-  // Build the message list, inserting a divider whenever the S changes
-  const messages = [];
+
+    const messages = [];
   let lastSection = null;
 
   state.history.forEach((h, i) => {
@@ -65,7 +65,7 @@ export default function ChatPage() {
        <div className="border-b border-slate-200 bg-white px-4 py-3">
          <div className="mx-auto max-w-2xl">
            <h1 className="font-semibold text-slate-800">{state.title}</h1>
-           <p className="text-xs text-slate-500">{[state.area ?? state.department, state.supervisor ?? state.contactPerson].filter(Boolean).join(' · ')}</p>
+           <p className="text-xs text-slate-500">{[state.area ?? state.department, state.evaluatedPerson].filter(Boolean).join(' · ')}</p>
            <div className="mt-2">
              <ProgressBar answered={state.history.length} total={state.total} />
            </div>
