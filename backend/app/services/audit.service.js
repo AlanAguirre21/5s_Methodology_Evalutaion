@@ -22,10 +22,14 @@ function buildState(audit, questionnaire) {
 
   const base = {
     auditId: audit._id,
+    questionnaireKey: questionnaire.key,
     title: questionnaire.title,
     costCenter: audit.costCenter,
     area: audit.area,
     supervisor: audit.supervisor,
+    department: audit.department,
+    contactPerson: audit.contactPerson,
+    workshop: audit.workshop,
     creator: audit.creator,
     total: questions.length,
     history,
@@ -58,26 +62,64 @@ async function loadAudit(id) {
   return { audit, questionnaire };
 }
 
-// Required free-text fields of the audit header
+// Required free-text fields of the audit header, per questionnaire key
+const HEADER_FIELDS = {
+  piso:    ['costCenter', 'area', 'supervisor', 'creator'],
+  oficina: ['department', 'contactPerson', 'workshop', 'creator'],
+};
+
 function requireText(value, name) {
   if (typeof value !== 'string' || !value.trim()) throw new HttpError(400, `${name} is required`);
   return value.trim();
 }
 
-export async function start({ questionnaireKey, costCenter, area, supervisor, creator }) {
+export async function start({ questionnaireKey, ...body }) {
   if (typeof questionnaireKey !== 'string') throw new HttpError(400, 'questionnaireKey is required');
-  const fields = {
-    costCenter: requireText(costCenter, 'costCenter'),
-    area:       requireText(area, 'area'),
-    supervisor: requireText(supervisor, 'supervisor'),
-    creator:    requireText(creator, 'creator'),
-  };
+  const names = HEADER_FIELDS[questionnaireKey];
+  if (!names) throw new HttpError(404, 'Questionnaire not found');
+
+  // Only the fields of this questionnaire are stored; anything else in the body is ignored
+  const fields = Object.fromEntries(names.map(n => [n, requireText(body[n], n)]));
 
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
 
   const audit = await Audit.create({ questionnaire: questionnaire._id, ...fields });
   return buildState(audit, questionnaire);
+}
+
+// All audits of one questionnaire type (every version), newest first
+export async function list(questionnaireKey) {
+  if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
+
+  const questionnaires = await Questionnaire.find({ key: questionnaireKey }).select('sections.questions._id').lean();
+  const totals = new Map(questionnaires.map(q => [
+    q._id.toString(),
+    q.sections.reduce((n, s) => n + s.questions.length, 0),
+  ]));
+
+  const audits = await Audit.find({ questionnaire: { $in: [...totals.keys()] } })
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .lean();
+
+  return audits.map(a => ({
+    auditId: a._id,
+    status: a.status,
+    createdAt: a.createdAt,
+    completedAt: a.completedAt,
+    answered: a.answers.length,
+    total: totals.get(a.questionnaire.toString()),
+    score: a.score,
+    result: a.result,
+    costCenter: a.costCenter,
+    area: a.area,
+    supervisor: a.supervisor,
+    department: a.department,
+    contactPerson: a.contactPerson,
+    workshop: a.workshop,
+    creator: a.creator,
+  }));
 }
 
 export async function getState(id) {

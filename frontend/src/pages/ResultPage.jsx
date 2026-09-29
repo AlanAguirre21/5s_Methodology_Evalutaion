@@ -19,12 +19,16 @@ export default function ResultPage() {
     return <Navigate to={`/audits/${auditId}`} replace />;
   }
 
+    // Each questionnaire type fills a different set of these; show only the ones present
     const details = [
         ['Centro de coste', state.costCenter],
         ['Área', state.area],
         ['Supervisor', state.supervisor],
+        ['Área/Departamento', state.department],
+        ['Persona de contacto', state.contactPerson],
+        ['Taller', state.workshop],
         ['Creador', state.creator],
-    ];
+    ].filter(([, value]) => value);
 
   return (
     <PageContainer>

@@ -1,4 +1,4 @@
-import Avatar from '../Avatar.jsx';
+import Avatar from './Avatar.jsx';
 
 export default function ChatBubble({ from, children }) {
   const isBot = from === "bot";

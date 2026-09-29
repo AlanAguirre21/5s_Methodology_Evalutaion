@@ -1,5 +1,10 @@
-import { Link, useLocation } from 'react-router';
+import { Link, NavLink, useLocation } from 'react-router';
 import { ClipboardCheck } from 'lucide-react';
+
+const linkClass = ({ isActive }) =>
+  `text-sm font-medium transition ${
+    isActive ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-900'
+  }`;
 
 export default function AppHeader() {
   const { pathname } = useLocation();
@@ -15,11 +20,19 @@ export default function AppHeader() {
           <span className="font-semibold text-slate-800">Evaluación 5S</span>
         </Link>
 
-        {!isHome && (
-          <Link to="/" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-            Inicio
-          </Link>
-        )}
+        <nav className="flex items-center gap-6">
+          <NavLink to="/registro" className={linkClass}>
+            Registro de evaluaciones
+          </NavLink>
+          <NavLink to="/personas" className={linkClass}>
+            Registro de personas
+          </NavLink>
+          {!isHome && (
+            <NavLink to="/" end className={linkClass}>
+              Inicio
+            </NavLink>
+          )}
+        </nav>
       </div>
     </header>
   );

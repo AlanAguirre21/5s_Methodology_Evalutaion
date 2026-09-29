@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage.jsx';
 import AuditFormPage from './pages/AuditFormPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
+import RecordPage from './pages/RecordPage.jsx';
 
 export default function App() {
   return (
@@ -11,6 +12,8 @@ export default function App() {
       <Routes>
         <Route element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/registro" element={<RecordPage />} />
+        <Route path="/personas" element={<PeoplePage />} />
         <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
         <Route path="/audits/:auditId" element={<ChatPage />} />
         <Route path="/audits/:auditId/result" element={<ResultPage />} />

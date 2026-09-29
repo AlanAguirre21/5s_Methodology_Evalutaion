@@ -8,9 +8,16 @@ import { QUESTIONNAIRE_OPTIONS } from '../constants/questionnaires.js';
 
 const FIVE_S = ['Seiri', 'Seiton', 'Seiso', 'Seiketsu', 'Shitsuke'];
 
+// Full class names so Tailwind can detect them
+const CARD_THEMES = {
+  piso:    { icon: 'bg-emerald-50 text-emerald-600', label: 'text-emerald-700' },
+  oficina: { icon: 'bg-amber-50 text-amber-600',     label: 'text-amber-700' },
+};
+
 function OptionCard({ option, status }) {
-  const { title, description, Icon } = option;
+  const { key, title, description, Icon } = option;
   const enabled = status === 'available';
+  const theme = CARD_THEMES[key] ?? CARD_THEMES.piso;
 
   const label = {
     loading: 'Cargando…',
@@ -22,7 +29,7 @@ function OptionCard({ option, status }) {
     <>
       <span
         className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-          enabled ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+          enabled ? theme.icon : 'bg-slate-100 text-slate-400'
         }`}
       >
         <Icon size={24} />
@@ -31,7 +38,7 @@ function OptionCard({ option, status }) {
       <p className="mt-1 flex-1 text-sm text-slate-600">{description}</p>
       <span
         className={`mt-6 flex items-center gap-1 text-sm font-semibold ${
-          enabled ? 'text-emerald-700' : 'text-slate-400'
+          enabled ? theme.label : 'text-slate-400'
         }`}
       >
         {label}

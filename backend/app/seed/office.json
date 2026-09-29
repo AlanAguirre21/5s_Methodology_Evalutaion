@@ -88,9 +88,11 @@
     }
   ],
   "results": [
-    { "min": 16, "text": "Puntaje Excelente" },
+    { "min": 29, "text": "Puntaje Excelente" },
     { "min": 14, "text": "Puntaje Objetivo" },
-    { "min": 12, "text": "Puntaje Mínimo" },
+    { "min": 12, "text": "Puntaje Bueno" },
+    { "min": 0, "text": "Puntaje Satisfactorio" },
+    { "min": 0, "text": "Suficiente" },
     { "min": 0, "text": "Deficiente" }
   ]
 }

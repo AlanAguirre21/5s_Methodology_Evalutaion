@@ -1,6 +1,7 @@
 const WIDTHS = {
   md: 'max-w-md',
   lg: 'max-w-3xl',
+  xl: 'max-w-5xl',
 };
 
 export default function PageContainer({ size = 'md', children }) {
