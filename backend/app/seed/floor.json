@@ -9,7 +9,7 @@
         { "text": "¿En el lugar de trabajo solo hay objetos que son directamente necesarios para cumplir con las tareas, como por ejemplo máquinas, herramientas de mano, equipos de medición, dispositivos, estanterías, etc.?" },
         { "text": "¿Solo hay materiales necesarios en el lugar de trabajo (equipos de protección individual, materiales de limpieza, materiales relacionados con el trabajo, contenedores de empleados, contenedores de transporte, materiales de producción, materiales auxiliares, etc.)?" },
         { "text": "¿Hay solo documentos válidos y requeridos en el lugar de trabajo?" },
-        { "text": "¿No hay objetos con fallos, defectuosos y/o sin revisar/probar en el lugar de trabajo (el scrap y los retrabajos deben estar en una caja etiquetada)?" }
+        { "text": "¿No hay objetos con fallos, defectuosos y/o sin revisar/probar en el lugar de trabajo? El scrap y los retrabajos deben estar en una caja etiquetada." }
       ]
     },
     {
@@ -17,13 +17,13 @@
       "name": "Seiton (Ordenar)",
       "weight": 1,
       "questions": [
-        { "text": "¿Todos los pasillos y áreas están claramente identificados mediante marcas en el suelo. Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta?" },
-        { "text": "¿Todas las zonas, como las áreas de trabajo, máquinas, etc. del área evaluada están claramente identificadas. Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta?" },
-        { "text": "¿Los espacios para materiales, inventarios, chatarra, retrabajo y áreas restringidas están identificados. Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta. Se han definido, identificado y se efectúa un seguimiento de los mínimos y máximos razonables de existencias?" },
+        { "text": "¿Todos los pasillos y áreas están claramente identificados mediante marcas en el suelo? Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta." },
+        { "text": "¿Todas las zonas, como las áreas de trabajo, máquinas, etc. del área evaluada están claramente identificadas? Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta." },
+        { "text": "¿Los espacios para materiales, inventarios, chatarra, retrabajo y áreas restringidas están identificados? Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta. Se han definido, identificado y se efectúa un seguimiento de los mínimos y máximos razonables de existencias." },
         { "text": "¿Todos los materiales en la estación de trabajo tienen un lugar definido e identificado cuando no están en uso (por ejemplo: documentos, herramientas, cuchillos, tijeras, bolígrafos, etc.)?" },
-        { "text": "¿Cada documento de ZF debe tener: fecha, validez, creador y, si es posible, el logo de ZF?" },
+        { "text": "¿Cada documento de ZF tiene: fecha, validez, creador y, si es posible, el logo de ZF?" },
         { "text": "¿Están todos los equipos, herramientas, materiales y contenedores fácilmente accesibles y son manejados correctamente por el operario, según una evaluación ergonómica (por ejemplo, método KIM, Humantech)?" },
-        { "text": "¿El contenido de los armarios, estanterías y mesas de trabajo está definido, marcado e identificado. Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta?" },
+        { "text": "¿El contenido de los armarios, estanterías y mesas de trabajo está definido, marcado e identificado? Se aplica el estándar de la División, si existiera; en caso contrario, se utiliza el estándar de Planta." },
         { "text": "¿Todos los contenedores y útiles de carga son utilizados correctamente y no para otros fines?" }
       ]
     },
@@ -32,11 +32,11 @@
       "name": "Seiso (Limpiar)",
       "weight": 1,
       "questions": [
-        { "text": "¿Todos los materiales y equipos de limpieza están disponibles en la cantidad apropiada. El espacio está definido y visualizado en el lugar de trabajo?" },
+        { "text": "¿Todos los materiales y equipos de limpieza están disponibles en la cantidad apropiada? El espacio está definido y visualizado en el lugar de trabajo." },
         { "text": "¿Los suelos, paredes, ventanas, etc., dentro del alcance, así como el marcado y etiquetado están limpios y en un estado ordenado (limpio y ordenado = condición acordada)?" },
         { "text": "¿Todas las máquinas, herramientas, equipos de medición, dispositivos y estanterías están limpios y en un estado ordenado (limpio y ordenado = condición acordada)?" },
         { "text": "¿Los sumideros/tanques, protecciones de máquina y rejillas se limpian con base en el Plan de Limpieza?" },
-        { "text": "¿La basura y los residuos están dispuestos en contenedores apropiados. Los contenedores para material, soportes de virutas, etc., están libres de basura y residuos?" }
+        { "text": "¿La basura y los residuos están dispuestos en contenedores apropiados? Los contenedores para material, soportes de virutas, etc., están libres de basura y residuos." }
       ]
     },
     {
@@ -46,7 +46,7 @@
       "questions": [
         { "text": "¿Las normas 5S están disponibles (por ejemplo, marcación de suelo, plan de limpieza, etc.)?" },
         { "text": "¿Las normas 5S son conocidas, se viven y se practican?" },
-        { "text": "¿El resultado de la evaluación de 5S puede ser visualizado (incluidas las desviaciones). La evolución 5S y el plan de acción deben estar visibles?" }
+        { "text": "¿El resultado de la evaluación de 5S puede ser visualizado (incluidas las desviaciones)? La evolución 5S y el plan de acción deben estar visibles." }
       ]
     },
     {
@@ -54,10 +54,10 @@
       "name": "Shitsuke (Disciplina)",
       "weight": 1,
       "questions": [
-        { "text": "¿El plan de evaluaciones 5S existe y se sigue? (incluidas las autoevaluaciones 5S / auditorías)?" },
+        { "text": "¿El plan de evaluaciones 5S existe y se sigue (incluidas las autoevaluaciones 5S / auditorías)?" },
         { "text": "¿Las medidas de la evaluación anterior se han implementado eficazmente?" },
-        { "text": "¿Ideas/sugerencias buenas y eficaces sobre las mejoras 5S son generadas e implementadas por el equipo de Planta. ¿Es posible la transferencia a otras áreas?" },
-        { "text": "¿Se han definido y se visualizan en el área la organización 5S / personas responsables? (Por ejemplo, entrenamientos 5S, talleres 5S o evaluaciones 5S)?" }
+        { "text": "¿Ideas/sugerencias buenas y eficaces sobre las mejoras 5S son generadas e implementadas por el equipo de Planta? Es posible la transferencia a otras áreas." },
+        { "text": "¿Se han definido y se visualizan en el área la organización 5S / personas responsables (Por ejemplo, entrenamientos 5S, talleres 5S o evaluaciones 5S)?" }
       ]
     }
   ],

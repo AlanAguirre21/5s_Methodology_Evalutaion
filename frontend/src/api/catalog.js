@@ -1,4 +1,3 @@
-// catalog.js — values registered on the People page
 import { api } from './client.js';
 
 export const listCatalog    = questionnaireKey => api(`/catalog?questionnaireKey=${encodeURIComponent(questionnaireKey)}`);

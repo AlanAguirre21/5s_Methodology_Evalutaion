@@ -82,7 +82,7 @@
       "weight": 1,
       "questions": [
         { "text": "¿El lugar de trabajo está libre de artículos privados?" },
-        { "text": "¿La oficina está libre de prendas de ropa esparcida?" },
+        { "text": "¿La oficina está libre de prendas de ropa esparcidas?" },
         { "text": "¿Existen gabinetes para guardar artículos?" }
       ]
     }
