@@ -6,7 +6,6 @@ import HttpError from '../utils/HttpError.js';
 import { HEADER_FIELDS } from '../constants/headerFields.js';
 import { computeResult } from '../services/evaluation.service.js';
 
-// Sections → one ordered list; the audit index walks through it
 function flatten(questionnaire) {
   return questionnaire.sections.flatMap(s =>
     s.questions.map(q => ({ id: q._id, text: q.text, section: { key: s.key, name: s.name } }))
@@ -75,10 +74,8 @@ export async function start({ questionnaireKey, ...body }) {
   const names = HEADER_FIELDS[questionnaireKey];
   if (!names) throw new HttpError(404, 'Questionnaire not found');
 
-  // Only the fields of this questionnaire are stored; anything else in the body is ignored
   const fields = Object.fromEntries(names.map(n => [n, requireText(body[n], n)]));
 
-  // Only values registered on the People page are accepted
   const registered = await Promise.all(names.map(n =>
     CatalogEntry.exists({ questionnaireKey, field: n, value: fields[n] })
   ));
@@ -92,7 +89,6 @@ export async function start({ questionnaireKey, ...body }) {
   return buildState(audit, questionnaire);
 }
 
-// All audits of one questionnaire type (every version), newest first
 export async function list(questionnaireKey) {
   if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
 

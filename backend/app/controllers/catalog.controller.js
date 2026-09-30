@@ -9,7 +9,6 @@ function fieldsOf(questionnaireKey) {
   return fields;
 }
 
-// { field: [{ _id, value }] } with every field of the type present, values sorted A–Z
 export async function list(req, res) {
   const { questionnaireKey } = req.query;
   const fields = fieldsOf(questionnaireKey);
@@ -39,7 +38,6 @@ export async function create(req, res) {
   }
 }
 
-// Past audits keep their text; the value just stops being offered in new audits
 export async function remove(req, res) {
   if (!mongoose.isValidObjectId(req.params.id)) throw new HttpError(400, 'Invalid id');
   const entry = await CatalogEntry.findByIdAndDelete(req.params.id);
