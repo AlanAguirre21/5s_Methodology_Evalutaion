@@ -17,7 +17,6 @@ export default function AuditFormPage() {
   const { questionnaireKey } = useParams();
   const navigate = useNavigate();
 
-  // Catalog tagged with its type, so the other type's lists are never shown while switching
   const [catalogState, setCatalogState] = useState({ key: null, data: null });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState(null);
@@ -26,14 +25,14 @@ export default function AuditFormPage() {
     const fields = HEADER_FIELDS[questionnaireKey];
     if (!fields) return;
     let active = true;
-    setError(null);        // don't carry an error over from the other type
+    setError(null);      
     setSubmitting(false);
 
     listCatalog(questionnaireKey)
       .then(c => { if (active) setCatalogState({ key: questionnaireKey, data: c }); })
       .catch(e => {
         if (!active) return;
-        setCatalogState({ key: questionnaireKey, data: Object.fromEntries(fields.map(f => [f.key, []])) });   // stop "Cargando…"
+        setCatalogState({ key: questionnaireKey, data: Object.fromEntries(fields.map(f => [f.key, []])) });   
         setError(e.message);
       });
 

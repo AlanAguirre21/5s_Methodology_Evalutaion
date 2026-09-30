@@ -4,14 +4,14 @@ import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
 import CatalogSelect from './CatalogSelect.jsx';
-
-const fieldClass =
-  'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30';
+import Button from './Button.jsx';
+import { Label } from './Input.jsx';
+import { PANEL, TYPE_THEMES } from '../constants/styles.js';
 
 function Field({ label, htmlFor, children }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <Label htmlFor={htmlFor}>{label}</Label>
       {children}
     </div>
   );
@@ -39,21 +39,21 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
 
   return (
     <PageContainer>
-      <Link to="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+      <Link to="/" className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text">
         <ArrowLeft size={16} /> Volver
       </Link>
 
       <div className="mt-4 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+        <span className={`neu-raised flex h-10 w-10 items-center justify-center rounded-control ${TYPE_THEMES.oficina.icon}`}>
           <Icon size={20} />
         </span>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Nueva evaluación</p>
-          <h1 className="text-xl font-bold text-slate-800">{title}</h1>
+          <p className="text-xs font-medium   text-text-muted">Nueva evaluación</p>
+          <h1 className="text-xl font-semibold text-text">{title}</h1>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <form onSubmit={handleSubmit} className={`mt-6 space-y-4 p-6 ${PANEL}`}>
         <Field label="Área/Departamento" htmlFor="departamento">
           <CatalogSelect
             id="departamento"
@@ -62,7 +62,6 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
             entries={catalog?.department ?? null}
             placeholder="Selecciona área/departamento"
             tab="oficina"
-            className={fieldClass}
           />
         </Field>
 
@@ -74,7 +73,6 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
             entries={catalog?.evaluatedPerson ?? null}
             placeholder="Selecciona persona evaluada"
             tab="oficina"
-            className={fieldClass}
           />
         </Field>
 
@@ -86,7 +84,6 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
             entries={catalog?.workshop ?? null}
             placeholder="Selecciona taller"
             tab="oficina"
-            className={fieldClass}
           />
         </Field>
 
@@ -98,15 +95,14 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
             entries={catalog?.supervisor ?? null}
             placeholder="Selecciona supervisor"
             tab="oficina"
-            className={fieldClass}
           />
         </Field>
 
         {error && <StatusMessage error={error} />}
 
-        <button type="submit" disabled={!isValid || submitting} className="w-full rounded-xl bg-amber-500 py-3 font-semibold text-white hover:bg-amber-600 disabled:opacity-50">
+        <Button type="submit" size="lg" variant={TYPE_THEMES.oficina.button} disabled={!isValid || submitting}>
           {submitting ? 'Iniciando…' : 'Iniciar auditoría'}
-        </button>
+        </Button>
       </form>
     </PageContainer>
   );

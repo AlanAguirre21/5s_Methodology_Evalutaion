@@ -5,19 +5,14 @@ import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { listQuestionnaires } from '../api/questionnaires.js';
 import { QUESTIONNAIRE_OPTIONS } from '../constants/questionnaires.js';
+import { CHIP, PANEL, TYPE_THEMES } from '../constants/styles.js';
 
 const FIVE_S = ['Seiri', 'Seiton', 'Seiso', 'Seiketsu', 'Shitsuke'];
-
-// Full class names so Tailwind can detect them
-const CARD_THEMES = {
-  piso:    { icon: 'bg-emerald-50 text-emerald-600', label: 'text-emerald-700' },
-  oficina: { icon: 'bg-amber-50 text-amber-600',     label: 'text-amber-700' },
-};
 
 function OptionCard({ option, status }) {
   const { key, title, description, Icon } = option;
   const enabled = status === 'available';
-  const theme = CARD_THEMES[key] ?? CARD_THEMES.piso;
+  const theme = TYPE_THEMES[key] ?? TYPE_THEMES.piso;
 
   const label = {
     loading: 'Cargando…',
@@ -28,21 +23,21 @@ function OptionCard({ option, status }) {
   return (
     <>
       <span
-        className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-          enabled ? theme.icon : 'bg-slate-100 text-slate-400'
+        className={`flex h-12 w-12 items-center justify-center rounded-control ${
+          enabled ? theme.icon : 'bg-white/50 text-text-faint'
         }`}
       >
         <Icon size={24} />
       </span>
-      <h2 className="mt-4 text-lg font-semibold text-slate-800">{title}</h2>
-      <p className="mt-1 flex-1 text-sm text-slate-600">{description}</p>
+      <h2 className="mt-4 text-lg font-semibold text-text">{title}</h2>
+      <p className="mt-1 flex-1 text-sm text-text-muted">{description}</p>
       <span
         className={`mt-6 flex items-center gap-1 text-sm font-semibold ${
-          enabled ? theme.label : 'text-slate-400'
+          enabled ? theme.label : 'text-text-faint'
         }`}
       >
         {label}
-        {enabled && <ChevronRight size={16} className="transition group-hover:translate-x-1" />}
+        {enabled && <ChevronRight size={16} />}
       </span>
     </>
   );
@@ -63,21 +58,30 @@ export default function HomePage() {
     return availableKeys.has(key) ? 'available' : 'unavailable';
   }
 
-  const cardBase = 'group flex flex-col rounded-2xl bg-white p-6 ring-1 ring-slate-200';
+  const cardBase = `group flex flex-col p-6 ${PANEL}`;
 
   return (
     <PageContainer size="lg">
       <section className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-800 sm:text-7xl">
+        <hgroup className="flex flex-col items-center gap-0 sm:gap-0">
+        <p className="text-sm font-semibold leading-none text-zf-blue sm:text-lg">
+          ZF ESL
+        </p>
+        <h1 className="flex items-center gap-3 text-4xl font-semibold text-text sm:gap-5 sm:text-7xl">
+          <span className={`inline-flex size-[1.2em] shrink-0 items-center justify-center ${PANEL}`}>
+            <img src="/ZF_logo.svg" alt="" className="size-[0.75em] object-contain" />
+          </span>
           Evaluación 5S
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-slate-600">
+      </hgroup>
+
+        <p className="mx-auto mt-3 max-w-xl text-text-muted">
           Selecciona el tipo de área a auditar. Responderás preguntas de Sí o No
           organizadas por cada una de las 5S.
         </p>
         <ul className="mt-6 flex flex-wrap justify-center gap-2">
           {FIVE_S.map(s => (
-            <li key={s} className="rounded-full bg-white px-5 py-2 text-base font-medium text-slate-600 ring-1 ring-slate-200">
+            <li key={s} className={`px-5 py-2 text-base font-medium text-text-muted ${CHIP}`}>
               {s}
             </li>
           ))}
@@ -87,7 +91,7 @@ export default function HomePage() {
       {error && <div className="mt-8"><StatusMessage error={error} /></div>}
 
       {availableKeys?.size === 0 && (
-        <div role="status" className="mt-8 rounded-xl bg-amber-50 p-4 text-center text-sm text-amber-800 ring-1 ring-amber-200">
+        <div role="status" className="glass mt-8 rounded-control border border-warning/25 bg-warning/25 p-4 text-center text-sm text-text">
           No hay cuestionarios cargados.
         </div>
       )}
@@ -100,12 +104,12 @@ export default function HomePage() {
             <Link
               key={option.key}
               to={`/audits/new/${option.key}`}
-              className={`${cardBase} shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-2 hover:ring-cyan-500`}
+              className={`${cardBase} transition-all hover:bg-white/60 hover:ring-2 hover:ring-accent/30`}
             >
               <OptionCard option={option} status={status} />
             </Link>
           ) : (
-            <div key={option.key} aria-disabled="true" className={`${cardBase} cursor-not-allowed opacity-70`}>
+            <div key={option.key} aria-disabled="true" className={`${cardBase} cursor-not-allowed opacity-40`}>
               <OptionCard option={option} status={status} />
             </div>
           );

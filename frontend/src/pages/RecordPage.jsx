@@ -5,29 +5,24 @@ import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { listAudits } from '../api/audits.js';
 import { QUESTIONNAIRE_OPTIONS, HEADER_FIELDS } from '../constants/questionnaires.js';
+import { PANEL, SEGMENTED, TYPE_THEMES } from '../constants/styles.js';
+import Button from '../components/Button.jsx';
+import { Select } from '../components/Input.jsx';
 
 const COLUMNS = Object.fromEntries(
   Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.map(f => [f.key, f.label])])
 );
 
-const TAB_THEMES = {
-  piso:    { active: 'bg-emerald-600 text-white shadow-sm', score: 'text-emerald-700' },
-  oficina: { active: 'bg-amber-500 text-white shadow-sm',   score: 'text-amber-700' },
-};
-
 const PAGE_SIZES = [10, 25, 50, 100, 0];   // 0 = all rows
-
-const selectClass =
-  'rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/20';
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' });
 
 function StatusBadge({ audit }) {
   if (audit.status === 'completed') {
-    return <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{audit.result ?? 'Completada'}</span>;
+    return <span className="rounded-full border border-white/60 bg-white/60 px-2 py-0.5 text-xs font-medium text-text-muted">{audit.result ?? 'Completada'}</span>;
   }
   return (
-    <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 ring-1 ring-sky-200">
+    <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent ring-1 ring-accent/30">
       En curso · {audit.answered}/{audit.total}
     </span>
   );
@@ -35,12 +30,12 @@ function StatusBadge({ audit }) {
 
 function AuditTable({ questionnaireKey, audits }) {
   const columns = COLUMNS[questionnaireKey];
-  const theme = TAB_THEMES[questionnaireKey];
+  const theme = TYPE_THEMES[questionnaireKey];
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div className={`overflow-x-auto ${PANEL}`}>
       <table className="w-full min-w-[720px] text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <thead className="border-b border-border bg-white/60 text-xs   text-text-muted">
           <tr>
             <th className="px-4 py-3 font-medium">Fecha</th>
             {columns.map(([key, label]) => <th key={key} className="px-4 py-3 font-medium">{label}</th>)}
@@ -49,25 +44,25 @@ function AuditTable({ questionnaireKey, audits }) {
             <th className="px-4 py-3"><span className="sr-only">Abrir</span></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className=" ">
           {audits.map(a => {
             const done = a.status === 'completed';
             return (
-              <tr key={a.auditId} className="hover:bg-slate-50">
-                <td className="whitespace-nowrap px-4 py-3 text-slate-600">{dateFormat.format(new Date(a.completedAt ?? a.createdAt))}</td>
-                {columns.map(([key]) => <td key={key} className="px-4 py-3 text-slate-800">{a[key] || '—'}</td>)}
-                <td className={`whitespace-nowrap px-4 py-3 text-right font-semibold ${done ? theme.score : 'text-slate-400'}`}>
+              <tr key={a.auditId} className="border-b border-white/40 hover:bg-white/50">
+                <td className="whitespace-nowrap px-4 py-3 text-text-muted">{dateFormat.format(new Date(a.completedAt ?? a.createdAt))}</td>
+                {columns.map(([key]) => <td key={key} className="px-4 py-3 text-text">{a[key] || '—'}</td>)}
+                <td className={`whitespace-nowrap px-4 py-3 text-right font-semibold ${done ? theme.label : 'text-text-faint'}`}>
                   {done ? `${a.score} / ${a.total}` : '—'}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3"><StatusBadge audit={a} /></td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-3 whitespace-nowrap">
                     {!done && (
-                      <Link to={`/audits/${a.auditId}`} className="font-medium text-sky-700 hover:text-sky-900">
+                      <Button as={Link} to={`/audits/${a.auditId}`} variant="success" size="sm">
                         Continuar
-                      </Link>
+                      </Button>
                     )}
-                    <Link to={`/registro/${a.auditId}`} className="inline-flex items-center gap-0.5 font-medium text-slate-600 hover:text-slate-900">
+                    <Link to={`/registro/${a.auditId}`} className="inline-flex items-center gap-0.5 font-medium text-text-muted hover:text-text">
                       Ver evaluación <ChevronRight size={16} />
                     </Link>
                   </div>
@@ -127,10 +122,10 @@ export default function RecordPage() {
 
   return (
     <PageContainer size="xl">
-      <h1 className="text-2xl font-bold text-slate-800">Registro de evaluaciones</h1>
-      <p className="mt-1 text-sm text-slate-600">Todas las evaluaciones realizadas, de la más reciente a la más antigua.</p>
+      <h1 className="text-2xl font-semibold text-text">Registro de evaluaciones</h1>
+      <p className="mt-1 text-sm text-text-muted">Todas las evaluaciones realizadas, de la más reciente a la más antigua.</p>
 
-      <div role="tablist" className="mt-6 inline-flex rounded-xl bg-white p-1 ring-1 ring-slate-200">
+      <div role="tablist" className={`mt-6 ${SEGMENTED}`}>
         {QUESTIONNAIRE_OPTIONS.map(({ key, title, Icon }) => {
           const selected = key === tab;
           return (
@@ -139,8 +134,8 @@ export default function RecordPage() {
               role="tab"
               aria-selected={selected}
               onClick={() => setSearchParams({ tab: key }, { replace: true })}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
-                selected ? TAB_THEMES[key].active : 'text-slate-600 hover:bg-slate-50'
+              className={`flex items-center gap-2 rounded-control px-4 py-2 text-sm font-medium transition-all ${
+                selected ? TYPE_THEMES[key].tab : 'text-text-muted hover:bg-white/60'
               }`}
             >
               <Icon size={16} /> {title}
@@ -153,7 +148,7 @@ export default function RecordPage() {
         {audits === null && <StatusMessage loading />}
         {error && <StatusMessage error={error} />}
         {audits?.length === 0 && !error && (
-          <p className="rounded-2xl bg-white py-12 text-center text-sm text-slate-500 ring-1 ring-slate-200">
+          <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>
             Aún no hay evaluaciones de este tipo.
           </p>
         )}
@@ -162,37 +157,34 @@ export default function RecordPage() {
             <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
               <div className="flex flex-wrap items-end gap-3">
                 {columns.map(([key, label]) => (
-                  <label key={key} className="flex flex-col gap-1 text-xs font-medium text-slate-600">
+                  <label key={key} className="flex flex-col gap-1 text-xs font-medium text-text-muted">
                     {label}
-                    <select value={filters[key] ?? ''} onChange={e => setFilter(key, e.target.value)} className={`${selectClass} min-w-36`}>
+                    <Select block={false} value={filters[key] ?? ''} onChange={e => setFilter(key, e.target.value)} className="min-w-36">
                       <option value="">Todos</option>
                       {options[key].map(v => <option key={v} value={v}>{v}</option>)}
-                    </select>
+                    </Select>
                   </label>
                 ))}
                 {activeFilters.length > 0 && (
-                  <button
-                    onClick={() => { setFilters({}); setPage(0); }}
-                    className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-                  >
+                  <Button variant="warning" onClick={() => { setFilters({}); setPage(0); }}>
                     Limpiar filtros
-                  </button>
+                  </Button>
                 )}
               </div>
 
-              <label className="flex flex-col gap-1 text-xs font-medium text-slate-600">
+              <label className="flex flex-col gap-1 text-xs font-medium text-text-muted">
                 Filas
-                <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(0); }} className={selectClass}>
+                <Select block={false} value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(0); }}>
                   {PAGE_SIZES.map(n => <option key={n} value={n}>{n || 'Todas'}</option>)}
-                </select>
+                </Select>
               </label>
             </div>
 
             {rows.length > 0
               ? <AuditTable questionnaireKey={tab} audits={rows} />
-              : <p className="rounded-2xl bg-white py-12 text-center text-sm text-slate-500 ring-1 ring-slate-200">No hay evaluaciones con estos filtros.</p>}
+              : <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>No hay evaluaciones con estos filtros.</p>}
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">
               <p>
                 {filtered.length === 0
                   ? '0 evaluaciones'
@@ -200,21 +192,13 @@ export default function RecordPage() {
               </p>
               {pageCount > 1 && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage(current - 1)}
-                    disabled={current === 0}
-                    className="inline-flex items-center gap-0.5 rounded-lg px-2.5 py-1.5 font-medium ring-1 ring-slate-200 hover:bg-white disabled:opacity-40"
-                  >
+                  <Button onClick={() => setPage(current - 1)} disabled={current === 0}>
                     <ChevronLeft size={16} /> Anterior
-                  </button>
+                  </Button>
                   <span className="px-1">{current + 1} / {pageCount}</span>
-                  <button
-                    onClick={() => setPage(current + 1)}
-                    disabled={current >= pageCount - 1}
-                    className="inline-flex items-center gap-0.5 rounded-lg px-2.5 py-1.5 font-medium ring-1 ring-slate-200 hover:bg-white disabled:opacity-40"
-                  >
+                  <Button onClick={() => setPage(current + 1)} disabled={current >= pageCount - 1}>
                     Siguiente <ChevronRight size={16} />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

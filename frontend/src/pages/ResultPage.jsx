@@ -1,7 +1,11 @@
 import { Link, Navigate, useParams } from 'react-router';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
+import Avatar from '../components/chat/Avatar.jsx';
 import { useAudit } from '../hooks/useAudit.js';
+import { PANEL } from '../constants/styles.js';
+import Button from '../components/Button.jsx';
+
 
 export default function ResultPage() {
   const { auditId } = useParams();
@@ -19,7 +23,6 @@ export default function ResultPage() {
     return <Navigate to={`/audits/${auditId}`} replace />;
   }
 
-    // Each questionnaire type fills a different set of these; show only the ones present
     const details = [
         ['Centro de coste', state.costCenter],
         ['Área', state.area],
@@ -31,37 +34,34 @@ export default function ResultPage() {
 
   return (
     <PageContainer>
-      <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <p className="text-center text-sm font-medium text-slate-500">{state.title}</p>
+      <div className={`p-8 ${PANEL}`}>
+        <div className="flex flex-col items-center">
+          <Avatar size={42} />
+          <p className="mt-3 text-center text-sm font-semibold text-zf-blue">{state.title}</p>
+        </div>
 
-        <p className="mt-6 text-center text-6xl font-bold text-slate-800">
+        <p className="mt-6 text-center text-6xl font-semibold text-text">
           {state.score}
-          <span className="text-2xl font-medium text-slate-400"> / {state.total}</span>
+          <span className="text-2xl font-medium text-text-faint"> / {state.total}</span>
         </p>
-        <p className="mt-3 text-center text-xl font-semibold text-emerald-700">{state.result}</p>
+        <p className="mt-3 text-center text-xl font-semibold text-accent">{state.result}</p>
 
-        <dl className="mt-8 divide-y divide-slate-100 border-t border-slate-100 text-sm">
+        <dl className="mt-8   border-t border-white/60 text-sm">
           {details.map(([label, value]) => (
-            <div key={label} className="flex justify-between py-2">
-              <dt className="text-slate-500">{label}</dt>
-              <dd className="font-medium text-slate-800">{value}</dd>
+            <div key={label} className="flex justify-between border-b border-white/40 py-2">
+              <dt className="text-text-muted">{label}</dt>
+              <dd className="font-medium text-text">{value}</dd>
             </div>
           ))}
         </dl>
 
-        <Link
-          to={`/registro/${auditId}`}
-          className="mt-8 block rounded-xl bg-white py-3 text-center font-semibold text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50"
-        >
+        <Button as={Link} to={`/registro/${auditId}`} size="lg" className="mt-8">
           Ver mis respuestas
-        </Link>
+        </Button>
 
-        <Link
-          to="/"
-          className="mt-3 block rounded-xl bg-slate-800 py-3 text-center font-semibold text-white hover:bg-slate-900"
-        >
+        <Button as={Link} to="/" variant="primary" size="lg" className="mt-3">
           Nueva auditoría
-        </Link>
+        </Button>
       </div>
     </PageContainer>
   );

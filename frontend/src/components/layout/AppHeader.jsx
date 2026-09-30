@@ -1,9 +1,9 @@
 import { Link, NavLink, useLocation } from 'react-router';
-import { ClipboardCheck } from 'lucide-react';
+import SM_logo from '../../../public/SF_logo.svg';
 
 const linkClass = ({ isActive }) =>
-  `text-sm font-medium transition ${
-    isActive ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-900'
+  `rounded-control px-3 py-1.5 text-sm font-medium transition-all ${
+    isActive ? 'neu-raised bg-white/60 text-accent' : 'text-text-muted hover:bg-white/50 hover:text-text'
   }`;
 
 export default function AppHeader() {
@@ -11,21 +11,20 @@ export default function AppHeader() {
   const isHome = pathname === '/';
 
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-white">
-            <ClipboardCheck size={18} />
-          </span>
-          <span className="font-semibold text-slate-800">Evaluación 5S</span>
+    <header className="glass shrink-0 border-b border-white/40 bg-white/40">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:h-20">
+        <Link to="/" className="flex shrink-0 items-center" aria-label="Ir al inicio">
+          <img src={SM_logo} alt="" className="h-12 w-auto sm:h-16" />
         </Link>
 
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-1">
           <NavLink to="/personas" className={linkClass}>
-            Registro de personas
+            <span className="hidden sm:inline">Elementos de auditoría</span>
+            <span className="sm:hidden">Personas</span>
           </NavLink>
           <NavLink to="/registro" className={linkClass}>
-            Registro de evaluaciones
+            <span className="hidden sm:inline">Registro de evaluaciones</span>
+            <span className="sm:hidden">Evaluaciones</span>
           </NavLink>
           {!isHome && (
             <NavLink to="/" end className={linkClass}>

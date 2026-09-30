@@ -8,7 +8,7 @@ import office from './office.json' with { type: 'json' };
 const QUESTIONNAIRES = [floor, office];
 const AREAS = ['Almacén', 'Producción', 'Mantenimiento'];
 const FIVE_S = ['seiri', 'seiton', 'seiso', 'seiketsu', 'shitsuke'];
-const FIVE_S_KEYS = ['piso'];  // questionnaires that must follow the 5S sections in order
+const FIVE_S_KEYS = ['piso']; 
 
 function validate(q) {
   const keys = q.sections.map(s => s.key);
@@ -28,7 +28,7 @@ function validate(q) {
 }
 
 try {
-  QUESTIONNAIRES.forEach(validate);   // fail before touching the DB
+  QUESTIONNAIRES.forEach(validate);   
   await mongoose.connect(process.env.MONGO_URI);
 
   for (const data of QUESTIONNAIRES) {

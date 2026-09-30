@@ -1,64 +1,66 @@
-import { useState } from 'react';
-import Button from './Button.jsx';
+import { CheckCircle2, SendHorizontal, XCircle } from 'lucide-react';
+import Avatar from './Avatar.jsx';
+import MenuOption from '../MenuOption.jsx';
 
-const MAX = 500;
+export const DEVIATION_MAX = 500;
 
-export default function AnswerControls({ onAnswer, disabled }) {
-  const [mode, setMode] = useState('choose');   // 'choose' | 'deviation'
-  const [text, setText] = useState('');
-
-  if (mode === 'choose') {
-    return (
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          variant="success"
-          onClick={() => onAnswer(true)}
-          disabled={disabled}
-        >
+export function QuickReplies({ onYes, onNo, disabled }) {
+  return (
+    <div className="flex items-end justify-start gap-2">
+      <Avatar size={26} />
+      <div className="glass neu-raised min-w-[180px] rounded-2xl rounded-bl-sm border border-white/60 bg-white/65 p-1.5">
+        <MenuOption icon={<CheckCircle2 size={16} />} color="success" onClick={onYes} disabled={disabled}>
           Sí
-        </Button>
-        <Button
-          variant="danger"
-          onClick={() => setMode('deviation')}
-          disabled={disabled}
-        >
+        </MenuOption>
+        <MenuOption icon={<XCircle size={16} />} color="danger" onClick={onNo} disabled={disabled}>
           No
-        </Button>
+        </MenuOption>
       </div>
-    );
+    </div>
+  );
+}
+
+export function DeviationBar({ active, text, onTextChange, onSend, disabled }) {
+  const canSend = active && !disabled && text.trim() !== '';
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (canSend) onSend();
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (canSend) onSend();
+    }
   }
 
   return (
-    <div className="space-y-2">
-      <label htmlFor="deviation" className="block text-sm font-medium text-slate-700">
-        Describe la desviación
-      </label>
+    <form onSubmit={handleSubmit} className="flex shrink-0 items-end gap-2 border-t border-white/40 px-4 py-3.5">
+      <label htmlFor="deviation" className="sr-only">Describe la desviación</label>
       <textarea
         id="deviation"
-        autoFocus
-        rows={3}
-        maxLength={MAX}
+        rows={active ? 2 : 1}
+        maxLength={DEVIATION_MAX}
         value={text}
-        onChange={e => setText(e.target.value)}
-        className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
+        onChange={e => onTextChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        disabled={!active || disabled}
+        autoFocus={active}
+        placeholder={active ? 'Describe la desviación…' : 'Responde con Sí o No'}
+        className="neu-inset max-h-32 flex-1 resize-none rounded-2xl border border-white/50 bg-white/50 px-4 py-2
+          text-sm text-text placeholder:text-text-faint transition-shadow focus:outline-none focus:ring-2 focus:ring-accent/30
+          disabled:cursor-not-allowed"
       />
-      <p className="text-right text-xs text-slate-500">{text.length}/{MAX}</p>
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          variant="default"
-          onClick={() => { setMode('choose'); setText(''); }}
-          disabled={disabled}
-        >
-          Cancelar
-        </Button>
-        <Button
-          variant="warning"
-          onClick={() => onAnswer(false, text.trim())}
-          disabled={disabled || !text.trim()}
-        >
-          Enviar
-        </Button>
-      </div>
-    </div>
+      <button
+        type="submit"
+        disabled={!canSend}
+        aria-label="Enviar desviación"
+        className="neu-raised flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-[#409CFF]
+          text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:active:scale-100"
+      >
+        <SendHorizontal size={16} />
+      </button>
+    </form>
   );
 }
