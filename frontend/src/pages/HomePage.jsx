@@ -1,22 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, FileSpreadsheet } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { listQuestionnaires } from '../api/questionnaires.js';
 import { QUESTIONNAIRE_OPTIONS } from '../constants/questionnaires.js';
-import { CHIP, PANEL, TYPE_THEMES } from '../constants/styles.js';
+import { CHIP, PANEL, ACCENT_THEME } from '../constants/styles.js';
 
 const FIVE_S = ['Seiri', 'Seiton', 'Seiso', 'Seiketsu', 'Shitsuke'];
 
+const POWER_BI_OPTION = {
+  key: 'powerbi',
+  title: 'Exportar a Power BI',
+  description: 'Descarga los resultados de las auditorías para analizarlos por área, por S y a lo largo del tiempo en tus tableros de Power BI.',
+  Icon: FileSpreadsheet,
+  actionLabel: 'Exportar datos',
+};
+const POWER_BI_STATUS = 'unavailable';   // switch to 'available' once the export exists
+
 function OptionCard({ option, status }) {
-  const { key, title, description, Icon } = option;
+  const { title, description, Icon, actionLabel = 'Iniciar evaluación' } = option;
   const enabled = status === 'available';
-  const theme = TYPE_THEMES[key] ?? TYPE_THEMES.piso;
+  const theme = ACCENT_THEME;
 
   const label = {
     loading: 'Cargando…',
-    available: 'Iniciar evaluación',
+    available: actionLabel,
     unavailable: 'Próximamente',
   }[status];
 
@@ -68,9 +77,7 @@ export default function HomePage() {
           ZF ESL
         </p>
         <h1 className="flex items-center gap-3 text-4xl font-semibold text-text sm:gap-5 sm:text-7xl">
-          <span className={`inline-flex size-[1.2em] shrink-0 items-center justify-center ${PANEL}`}>
-            <img src="/ZF_logo.svg" alt="" className="size-[0.75em] object-contain" />
-          </span>
+          <img src="/ZF_logo.svg" alt="" className="size-[1em] object-contain" />
           Evaluación 5S
         </h1>
       </hgroup>
@@ -114,6 +121,20 @@ export default function HomePage() {
             </div>
           );
         })}
+
+        {/* Power BI export: same card as the questionnaires, full width */}
+        {POWER_BI_STATUS === 'available' ? (
+          <button
+            type="button"
+            className={`${cardBase} text-left transition-all hover:bg-white/60 hover:ring-2 hover:ring-accent/30 sm:col-span-2`}
+          >
+            <OptionCard option={POWER_BI_OPTION} status={POWER_BI_STATUS} />
+          </button>
+        ) : (
+          <div aria-disabled="true" className={`${cardBase} cursor-not-allowed opacity-40 sm:col-span-2`}>
+            <OptionCard option={POWER_BI_OPTION} status={POWER_BI_STATUS} />
+          </div>
+        )}
       </section>
     </PageContainer>
   );

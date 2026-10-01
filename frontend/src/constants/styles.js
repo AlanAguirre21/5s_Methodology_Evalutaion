@@ -11,7 +11,7 @@ export const SEGMENTED = 'glass neu-raised inline-flex rounded-control border bo
 
 export const CHIP = 'glass neu-raised rounded-full border border-white/50 bg-white/40';
 
-const ACCENT_THEME = {
+export const ACCENT_THEME = {
   tab:    'bg-accent text-white shadow-md shadow-accent/25',
   icon:   'bg-accent-soft text-accent',
   label:  'text-accent',

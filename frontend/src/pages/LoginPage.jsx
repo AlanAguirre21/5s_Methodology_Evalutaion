@@ -16,7 +16,6 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState(null);
 
-  // Already identified (or just logged in): go back to the page that asked for the login
   if (user) return <Navigate to={location.state?.from ?? '/'} replace />;
 
   const isValid = username.trim() !== '';

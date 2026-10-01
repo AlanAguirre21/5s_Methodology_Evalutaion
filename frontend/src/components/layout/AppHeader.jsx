@@ -31,7 +31,7 @@ export default function AppHeader() {
           <nav className="flex items-center gap-1">
             <NavLink to="/personas" className={linkClass}>
               <span className="hidden sm:inline">Elementos de auditoría</span>
-              <span className="sm:hidden">Personas</span>
+              <span className="sm:hidden">Elementos</span>
             </NavLink>
             <NavLink to="/registro" className={linkClass}>
               <span className="hidden sm:inline">Registro de evaluaciones</span>
@@ -49,7 +49,7 @@ export default function AppHeader() {
             )}
 
             <span
-              className="ml-2 hidden max-w-40 truncate border-l border-border-strong pl-3 text-sm text-text md:inline"
+              className="ml-2 hidden max-w-50 truncate border-l border-border-strong pl-3 text-sm text-muted md:inline"
               title={`${user.username} · ${ROLE_LABELS[user.role]}`}
             >
               {user.name}
