@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
+import AuthProvider from './auth/AuthContext.jsx';
+import RequireAuth from './auth/RequireAuth.jsx';
 import AppLayout from './components/layout/AppLayout.jsx';
 import HomePage from './pages/HomePage.jsx';
 import AuditFormPage from './pages/AuditFormPage.jsx';
@@ -7,21 +9,30 @@ import ResultPage from './pages/ResultPage.jsx';
 import RecordPage from './pages/RecordPage.jsx';
 import PeoplePage from './pages/PeoplePage.jsx';
 import AuditDetailPage from './pages/AuditDetailPage.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import NewUserPage from './pages/users/NewUserPage.jsx';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/registro" element={<RecordPage />} />
-        <Route path="/registro/:auditId" element={<AuditDetailPage />} />
-        <Route path="/personas" element={<PeoplePage />} />
-        <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
-        <Route path="/audits/:auditId" element={<ChatPage />} />
-        <Route path="/audits/:auditId/result" element={<ResultPage />} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/usuarios/nuevo" element={<NewUserPage />} />
+
+            <Route element={<RequireAuth />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/registro" element={<RecordPage />} />
+              <Route path="/registro/:auditId" element={<AuditDetailPage />} />
+              <Route path="/personas" element={<PeoplePage />} />
+              <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
+              <Route path="/audits/:auditId" element={<ChatPage />} />
+              <Route path="/audits/:auditId/result" element={<ResultPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

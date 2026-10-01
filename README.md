@@ -141,6 +141,9 @@ Base: `http://localhost:3000/api`
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
+| POST   | `/auth/login` | Identificarse con `{ username }`; devuelve `{ token, user }` |
+| GET    | `/auth/me` | Usuario de la sesión actual |
+| POST   | `/users` | Crear usuario `{ username, name, role? }`; solo un administrador puede asignar `role: "admin"` |
 | GET    | `/questionnaires` | Tipos de cuestionario disponibles |
 | GET    | `/catalog?questionnaireKey=piso\|oficina` | Valores registrados por campo |
 | POST   | `/catalog` | Registrar un valor `{ questionnaireKey, field, value }` |
@@ -149,6 +152,10 @@ Base: `http://localhost:3000/api`
 | POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo |
 | GET    | `/audits/:id` | Estado completo de una evaluación |
 | POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` |
+
+Salvo `/auth/login` y `/users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
+El inicio de sesión es solo **identificación** (nombre de usuario, sin contraseña): el token es el id del usuario.
+`npm run seed` crea el primer administrador (`admin`, o el valor de `ADMIN_USERNAME` en `backend/.env`).
 
 Campos para iniciar una evaluación:
 

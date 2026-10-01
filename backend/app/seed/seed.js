@@ -2,11 +2,14 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import Questionnaire from '../models/Questionnaire.js';
 import Area from '../models/Area.js';
+import User from '../models/User.js';
+import { ROLES } from '../constants/roles.js';
 import floor from './floor.json' with { type: 'json' };
 import office from './office.json' with { type: 'json' };
 
 const QUESTIONNAIRES = [floor, office];
 const AREAS = ['Almacén', 'Producción', 'Mantenimiento'];
+const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || 'admin').trim().toLowerCase();   // first admin, so someone can create the others
 const FIVE_S = ['seiri', 'seiton', 'seiso', 'seiketsu', 'shitsuke'];
 const FIVE_S_KEYS = ['piso']; 
 
@@ -45,6 +48,13 @@ try {
     await Area.updateOne({ name }, { $setOnInsert: { name } }, { upsert: true });
   }
   console.log(`Areas ensured: ${AREAS.join(', ')}`);
+
+  await User.updateOne(
+    { username: ADMIN_USERNAME },
+    { $setOnInsert: { username: ADMIN_USERNAME, name: 'Administrador', role: ROLES.ADMIN } },
+    { upsert: true },
+  );
+  console.log(`Admin user ensured: ${ADMIN_USERNAME}`);
 } catch (err) {
   console.error('Seed failed:', err.message);
   process.exitCode = 1;
