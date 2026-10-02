@@ -97,7 +97,7 @@ export default function RecordPage() {
   const rows      = pageSize ? filtered.slice(start, start + pageSize) : filtered;
 
   const exportUrl = exportKey
-    ? `${window.location.origin}/api/export/audits.csv?questionnaireKey=${tab}&key=${exportKey}`
+    ? `${window.location.origin}/api/export/${exportKey}/${tab}.csv`
     : null;
 
   async function handleCopy(e) {
@@ -123,7 +123,7 @@ export default function RecordPage() {
             Copiar enlace de {getQuestionnaireOption(tab).title} para Power BI
           </a>
         )}
-        {copied && <span role="status" className="text-text-muted">Copiado. En Power BI: Obtener datos → Web.</span>}
+        {copied && <span role="status" className="text-text-muted">Copiado. En Power BI Desktop: Obtener datos → Web y pega el enlace.</span>}
         {exportError && <span role="alert" className="w-full text-danger">{exportError}</span>}
       </section>
 

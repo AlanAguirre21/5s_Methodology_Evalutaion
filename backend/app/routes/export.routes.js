@@ -6,6 +6,6 @@ import { ROLES } from '../constants/roles.js';
 const router = express.Router();
 
 router.get('/key', requireRole(ROLES.ADMIN), ctrl.getKey);
-router.get('/audits.csv', ctrl.auditsCsv);   // ?questionnaireKey=piso|oficina&key= — no session: Power BI reads it with the key
+router.get('/:key/:file', ctrl.audits);   // file: piso|oficina + .csv|.json|.html — no session: Power BI reads it with the key
 
 export default router;

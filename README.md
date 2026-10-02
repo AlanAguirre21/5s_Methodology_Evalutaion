@@ -157,7 +157,7 @@ Base: `http://localhost:3000/api`
 | DELETE | `/catalog/:id` | Eliminar un valor (las evaluaciones anteriores no cambian) |
 | GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones de todos los usuarios, más recientes primero (solo administrador) |
 | GET    | `/export/key` | Clave de solo lectura para el enlace de Power BI (solo administrador) |
-| GET    | `/export/audits.csv?questionnaireKey=piso\|oficina&key=` | Evaluaciones del tipo en CSV, con los puntos por sección. No usa sesión: se autoriza con la clave, para pegarlo en Power BI (Obtener datos → Web) |
+| GET    | `/export/:key/piso.csv` · `/export/:key/oficina.csv` | Evaluaciones del tipo con los puntos por sección, para Power BI. No usa sesión: se autoriza con la clave del enlace. Devuelve CSV; con `.json` o `.html` al final devuelve JSON o una página con la tabla |
 | GET    | `/audits/mine?from=&to=` | Evaluaciones realizadas por el usuario de la sesión en el periodo (por defecto, el último año) |
 | POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo |
 | GET    | `/audits/:id` | Estado completo de una evaluación (quien la realizó o un administrador) |
