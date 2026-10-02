@@ -17,7 +17,7 @@ export default function CatalogSelect({ id, value, onChange, entries, placeholde
       {empty && (
         <div className="mt-1">
           <MenuOption icon={<UserPlus size={16} />} color="accent" onClick={() => navigate(`/personas?tab=${tab}`)}>
-            Registrar en Registro de personas
+            Registrar en elementos de auditoría
           </MenuOption>
         </div>
       )}

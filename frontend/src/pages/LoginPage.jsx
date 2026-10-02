@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
-import { LogIn } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import Button from '../components/Button.jsx';
@@ -36,18 +35,19 @@ export default function LoginPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center gap-3">
-        <span className="neu-raised flex h-10 w-10 items-center justify-center rounded-control bg-accent-soft text-accent">
-          <LogIn size={20} />
-        </span>
-        <div>
-          <p className="text-xs font-medium text-text-muted">Evaluación 5S</p>
-          <h1 className="text-xl font-semibold text-text">Iniciar sesión</h1>
-        </div>
-      </div>
+      <form onSubmit={handleSubmit} className={`mt-4 p-6 sm:mt-8 sm:p-8 ${PANEL}`}>
+        <hgroup className="flex flex-col items-center border-b border-white/60 pb-6 text-center">
+          <p className="text-xs font-semibold leading-none tracking-wide text-zf-blue sm:text-sm">
+            ZF ESL
+          </p>
+          <h1 className="mt-1 flex items-center gap-2.5 text-3xl font-semibold text-text sm:text-4xl">
+            <img src="/ZF_logo.svg" alt="" className="size-[1em] object-contain" />
+            Evaluación 5S
+          </h1>
+          <h2 className="mt-3 text-base font-medium text-text-muted">Iniciar sesión</h2>
+        </hgroup>
 
-      <form onSubmit={handleSubmit} className={`mt-6 space-y-4 p-6 ${PANEL}`}>
-        <div>
+        <div className="mt-6">
           <Label htmlFor="name">Nombre</Label>
           <Input
             id="name"
@@ -58,17 +58,21 @@ export default function LoginPage() {
             autoComplete="name"
             spellCheck={false}
             placeholder="Tu nombre completo"
+            className="py-2"
           />
+          <p id="name-hint" className="mt-1 text-xs text-text-faint">
+            Ingresa tu nombre completo para iniciar sesión.
+          </p>
         </div>
 
-        {error && <StatusMessage error={error} />}
+        {error && <div className="mt-4"><StatusMessage error={error} /></div>}
 
-        <Button type="submit" size="lg" variant="primary" disabled={!isValid || submitting}>
+        <Button type="submit" size="lg" className="mt-6" variant="primary" disabled={!isValid || submitting}>
           {submitting ? 'Entrando…' : 'Entrar'}
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-text-muted">
+      <p className="mt-5 text-center text-sm text-text-muted">
         ¿Aún no estás registrado?{' '}
         <Link to="/usuarios/nuevo" className="font-medium text-accent hover:underline">Regístrate</Link>
       </p>

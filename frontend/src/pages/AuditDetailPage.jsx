@@ -7,6 +7,8 @@ import { useAudit } from '../hooks/useAudit.js';
 import { PANEL, TILE } from '../constants/styles.js';
 import Button from '../components/Button.jsx';
 import { getQuestionnaireOption, HEADER_FIELDS } from '../constants/questionnaires.js';
+import { useAuth } from '../hooks/useAuth.js';
+import { ROLES } from '../constants/roles.js';
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'long', timeStyle: 'short' });
 
@@ -27,6 +29,8 @@ function AnswerBadge({ answer }) {
 export default function AuditDetailPage() {
   const { auditId } = useParams();
   const { state, loading, error } = useAudit(auditId);
+  const { user } = useAuth();
+  const isAdmin = user.role === ROLES.ADMIN;
 
   if (loading || !state) {
     return (
@@ -50,10 +54,10 @@ export default function AuditDetailPage() {
   return (
     <PageContainer size="lg">
       <Link
-        to={`/registro?tab=${state.questionnaireKey}`}
+        to={`${isAdmin ? '/registro' : '/historial'}?tab=${state.questionnaireKey}`}
         className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text"
       >
-        <ArrowLeft size={16} /> Registro de evaluaciones
+        <ArrowLeft size={16} /> {isAdmin ? 'Registro de evaluaciones' : 'Historial de evaluaciones'}
       </Link>
 
       {/* Summary */}

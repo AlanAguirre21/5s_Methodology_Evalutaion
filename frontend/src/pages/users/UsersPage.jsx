@@ -165,7 +165,8 @@ export default function UsersPage() {
                           block={false}
                           value={u.role}
                           onChange={e => handleRoleChange(u, e.target.value)}
-                          disabled={busyId === u.id}
+                          disabled={busyId === u.id || (u.role === ROLES.ADMIN && admins === 1)}
+                          title={u.role === ROLES.ADMIN && admins === 1 ? 'Debe quedar al menos un administrador' : undefined}
                           aria-label={`Rol de ${u.name}`}
                         >
                           {Object.values(ROLES).map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}

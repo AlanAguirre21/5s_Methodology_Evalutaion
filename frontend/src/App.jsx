@@ -31,8 +31,8 @@ export default function App() {
               <Route path="/historial" element={<ProfileRecordPage />} />
               <Route element={<RequireRole roles={[ROLES.ADMIN]} />}>
                 <Route path="/usuarios" element={<UsersPage />} />
+                <Route path="/registro" element={<RecordPage />} />
               </Route>
-              <Route path="/registro" element={<RecordPage />} />
               <Route path="/registro/:auditId" element={<AuditDetailPage />} />
               <Route path="/personas" element={<PeoplePage />} />
               <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />

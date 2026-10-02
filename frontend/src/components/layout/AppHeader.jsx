@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
-import { LogOut, Users } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import SM_logo from '../../../public/SF_logo.svg';
 import { useAuth } from '../../hooks/useAuth.js';
 import UserAvatar from '../profile/UserAvatar.jsx';
@@ -29,7 +29,8 @@ export default function AppHeader() {
         </Link>
 
         {user && (
-          <nav className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center self-stretch">
+          <nav className="flex min-w-0 items-center gap-1 self-stretch overflow-x-auto px-1 whitespace-nowrap [scrollbar-width:none] *:shrink-0 [&::-webkit-scrollbar]:hidden">
             {!isHome && (
               <NavLink to="/" end className={linkClass}>
                 Inicio
@@ -40,10 +41,12 @@ export default function AppHeader() {
               <span className="hidden sm:inline">Elementos de auditoría</span>
               <span className="sm:hidden">Elementos</span>
             </NavLink>
-            <NavLink to="/registro" className={linkClass}>
-              <span className="hidden sm:inline">Registro de evaluaciones</span>
-              <span className="sm:hidden">Registro</span>
-            </NavLink>
+            {user.role === ROLES.ADMIN && (
+              <NavLink to="/registro" className={linkClass}>
+                <span className="hidden sm:inline">Registro de evaluaciones</span>
+                <span className="sm:hidden">Registro</span>
+              </NavLink>
+            )}
             <NavLink to="/historial" className={linkClass}>
               <span className="hidden sm:inline">Historial de evaluaciones</span>
               <span className="sm:hidden">Historial</span>
@@ -54,14 +57,14 @@ export default function AppHeader() {
                 end
                 className={state => `${linkClass(state)} inline-flex items-center gap-2`}
               >
-                <Users size={16} />
                 Usuarios
               </NavLink>
             )}
+          </nav>
 
             <NavLink
               to="/perfil"
-              className="ml-2 flex min-w-0 items-center gap-2 border-l border-border-strong pl-3 text-sm font-medium text-text-muted hover:text-text"
+              className="ml-2 flex shrink-0 items-center gap-2 border-l border-border-strong pl-3 text-sm font-medium text-text-muted hover:text-text"
               title={`Mi perfil · ${user.name} · ${ROLE_LABELS[user.role]}`}
               aria-label="Mi perfil"
             >
@@ -72,11 +75,11 @@ export default function AppHeader() {
               onClick={handleLogout}
               aria-label="Cerrar sesión"
               title={`Cerrar sesión (${user.name})`}
-              className="rounded-control p-2 text-text-muted transition-all hover:bg-white/50 hover:text-danger"
+              className="shrink-0 rounded-control p-2 text-text-muted transition-all hover:bg-white/50 hover:text-danger"
             >
               <LogOut size={16} />
             </button>
-          </nav>
+          </div>
         )}
       </div>
     </header>

@@ -3,8 +3,10 @@ import Questionnaire from '../models/Questionnaire.js';
 import Audit from '../models/Audit.js';
 import CatalogEntry from '../models/CatalogEntry.js';
 import HttpError from '../utils/HttpError.js';
-import { HEADER_FIELDS } from '../constants/headerFields.js';
+import User from '../models/User.js';
+import { HEADER_FIELDS, PHOTO_REQUIRED } from '../constants/headerFields.js';
 import { computeResult } from '../services/evaluation.service.js';
+import { ROLES } from '../constants/roles.js';
 
 function flatten(questionnaire) {
   return questionnaire.sections.flatMap(s =>
@@ -52,11 +54,14 @@ function buildState(audit, questionnaire) {
   return { ...base, status: 'in_progress', index, section: q.section, question: { id: q.id, text: q.text } };
 }
 
-async function loadAudit(id) {
+async function loadAudit(id, user) {
   if (!mongoose.isValidObjectId(id)) throw new HttpError(400, 'Invalid audit id');
 
   const audit = await Audit.findById(id);
   if (!audit) throw new HttpError(404, 'Audit not found');
+  if (user.role !== ROLES.ADMIN && !audit.auditor?.equals(user._id)) {
+    throw new HttpError(403, 'Solo puedes consultar las evaluaciones que realizaste');
+  }
 
   const questionnaire = await Questionnaire.findById(audit.questionnaire).lean();
   if (!questionnaire) throw new HttpError(500, 'Audit references missing questionnaire');
@@ -69,7 +74,7 @@ function requireText(value, name) {
   return value.trim();
 }
 
-export async function start({ questionnaireKey, ...body }, auditorId) {
+export async function start({ questionnaireKey, ...body }, user) {
   if (typeof questionnaireKey !== 'string') throw new HttpError(400, 'questionnaireKey is required');
   const names = HEADER_FIELDS[questionnaireKey];
   if (!names) throw new HttpError(404, 'Questionnaire not found');
@@ -82,14 +87,17 @@ export async function start({ questionnaireKey, ...body }, auditorId) {
   const missing = names.filter((n, i) => !registered[i]);
   if (missing.length) throw new HttpError(400, `Not registered: ${missing.join(', ')}`);
 
+  if (PHOTO_REQUIRED.includes(questionnaireKey) && !(await User.exists({ _id: user._id, avatar: { $ne: null } }))) {
+    throw new HttpError(400, 'Para esta evaluación necesitas una foto en tu perfil');
+  }
+
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
 
-  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: auditorId, ...fields });
+  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: user._id, evaluatedPerson: user.name, ...fields });
   return buildState(audit, questionnaire);
 }
 
-// id -> { key, total questions } of the questionnaires (every version) that match the filter
 async function questionnaireInfo(filter) {
   const questionnaires = await Questionnaire.find(filter).select('key sections.questions._id').lean();
   return new Map(questionnaires.map(q => [
@@ -116,6 +124,7 @@ function toListItem(a, info) {
     department: a.department,
     workshop: a.workshop,
     evaluatedPerson: a.evaluatedPerson,
+    auditor: a.auditor ?? null,
   };
 }
 
@@ -130,6 +139,35 @@ export async function list(questionnaireKey) {
     .lean();
 
   return audits.map(a => toListItem(a, info));
+}
+
+// Every audit of one type, with the points of each section, for the Power BI export
+export async function exportData(questionnaireKey) {
+  if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
+
+  const questionnaires = await Questionnaire.find({ key: questionnaireKey })
+    .sort({ version: -1 })
+    .select('key sections.key sections.name sections.questions._id')
+    .lean();
+
+  const info = new Map(questionnaires.map(q => [
+    q._id.toString(),
+    { key: q.key, total: q.sections.reduce((n, s) => n + s.questions.length, 0) },
+  ]));
+
+  const sections = [];
+  for (const q of questionnaires) {
+    for (const s of q.sections) {
+      if (!sections.some(known => known.key === s.key)) sections.push({ key: s.key, name: s.name });
+    }
+  }
+
+  const audits = await Audit.find({ questionnaire: { $in: [...info.keys()] } }).sort({ createdAt: -1 }).lean();
+
+  return {
+    sections,
+    audits: audits.map(a => ({ ...toListItem(a, info), sectionScores: a.sectionScores })),
+  };
 }
 
 function parseDate(value, name) {
@@ -156,19 +194,19 @@ export async function listByAuditor(auditorId, from, to) {
   return audits.map(a => toListItem(a, info));
 }
 
-export async function getState(id) {
-  const { audit, questionnaire } = await loadAudit(id);
+export async function getState(id, user) {
+  const { audit, questionnaire } = await loadAudit(id, user);
   return buildState(audit, questionnaire);
 }
 
-export async function answer(id, index, value, deviation) {
+export async function answer(id, index, value, deviation, user) {
   if (typeof value !== 'boolean') throw new HttpError(400, 'answer must be true or false');
   if (!Number.isInteger(index))  throw new HttpError(400, 'index must be an integer');
   if (value === false && (typeof deviation !== 'string' || !deviation.trim())) {
     throw new HttpError(400, 'deviation is required when answer is No');
   }
 
-  const { audit, questionnaire } = await loadAudit(id);
+  const { audit, questionnaire } = await loadAudit(id, user);
   const questions = flatten(questionnaire);
 
   if (audit.status === 'completed')   throw new HttpError(409, 'Audit already completed');

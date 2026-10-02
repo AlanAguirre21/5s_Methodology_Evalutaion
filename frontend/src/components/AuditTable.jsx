@@ -1,8 +1,12 @@
 import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import Button from './Button.jsx';
-import { AUDIT_COLUMNS } from '../constants/questionnaires.js';
+import { HEADER_FIELDS } from '../constants/questionnaires.js';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
+
+export const AUDIT_COLUMNS = Object.fromEntries(
+  Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.map(f => [f.key, f.label])])
+);
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' });
 

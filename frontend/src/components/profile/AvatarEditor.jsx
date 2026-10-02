@@ -6,11 +6,9 @@ import UserAvatar from './UserAvatar.jsx';
 import { updateMe } from '../../api/users.js';
 import { PANEL } from '../../constants/styles.js';
 
-const AVATAR_SIZE = 256;                    // px; the picture is cropped to a centred square of this size
-const AVATAR_MAX_LENGTH = 90_000;           // same limit as the backend
+const AVATAR_SIZE = 256;                 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
-// Crop + shrink in the browser, so what is uploaded (and stored) is always a small JPEG
 async function toAvatarDataUrl(file) {
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   const side = Math.min(bitmap.width, bitmap.height);
@@ -23,12 +21,7 @@ async function toAvatarDataUrl(file) {
     0, 0, AVATAR_SIZE, AVATAR_SIZE,
   );
   bitmap.close();
-
-  for (const quality of [0.85, 0.7, 0.55]) {
-    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-    if (dataUrl.length <= AVATAR_MAX_LENGTH) return dataUrl;
-  }
-  throw new Error('too large');
+  return canvas.toDataURL('image/jpeg', 0.85);
 }
 
 export default function AvatarEditor({ user, onSaved }) {

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
-import { ArrowLeft, UserPlus } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import StatusMessage from '../../components/StatusMessage.jsx';
 import Button from '../../components/Button.jsx';
@@ -42,22 +41,19 @@ export default function NewUserPage() {
 
   return (
     <PageContainer>
-      <Link to="/login" className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-text">
-        <ArrowLeft size={16} /> Iniciar sesión
-      </Link>
+      <form onSubmit={handleSubmit} className={`mt-4 p-6 sm:mt-8 sm:p-8 ${PANEL}`}>
+        <hgroup className="flex flex-col items-center border-b border-white/60 pb-6 text-center">
+          <p className="text-xs font-semibold leading-none tracking-wide text-zf-blue sm:text-sm">
+            ZF ESL
+          </p>
+          <h1 className="mt-1 flex items-center gap-2.5 text-3xl font-semibold text-text sm:text-4xl">
+            <img src="/ZF_logo.svg" alt="" className="size-[1em] object-contain" />
+            Evaluación 5S
+          </h1>
+          <h2 className="mt-3 text-base font-medium text-text-muted">Crear usuario</h2>
+        </hgroup>
 
-      <div className="mt-4 flex items-center gap-3">
-        <span className="neu-raised flex h-10 w-10 items-center justify-center rounded-control bg-accent-soft text-accent">
-          <UserPlus size={20} />
-        </span>
-        <div>
-          <p className="text-xs font-medium text-text-muted">Evaluación 5S</p>
-          <h1 className="text-xl font-semibold text-text">Crear usuario</h1>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className={`mt-6 space-y-4 p-6 ${PANEL}`}>
-        <div>
+        <div className="mt-6">
           <Label htmlFor="name">Nombre completo</Label>
           <Input
             id="name"
@@ -68,18 +64,24 @@ export default function NewUserPage() {
             autoComplete="off"
             placeholder="p. ej. Juan Pérez"
             aria-describedby="name-hint"
+            className="py-2"
           />
           <p id="name-hint" className="mt-1 text-xs text-text-faint">
             Con este nombre se inicia sesión. No importan mayúsculas ni acentos.
           </p>
         </div>
 
-        {error && <StatusMessage error={error} />}
+        {error && <div className="mt-4"><StatusMessage error={error} /></div>}
 
-        <Button type="submit" size="lg" variant="primary" disabled={!isValid || submitting}>
+        <Button type="submit" size="lg" className="mt-6" variant="primary" disabled={!isValid || submitting}>
           {submitting ? 'Creando…' : 'Crear usuario'}
         </Button>
       </form>
+
+      <p className="mt-5 text-center text-sm text-text-muted">
+        ¿Ya estás registrado?{' '}
+        <Link to="/login" className="font-medium text-accent hover:underline">Inicia sesión</Link>
+      </p>
     </PageContainer>
   );
 }

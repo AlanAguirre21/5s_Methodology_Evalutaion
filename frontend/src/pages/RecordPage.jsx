@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileSpreadsheet, Search } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import AuditTable from '../components/AuditTable.jsx';
-import { listAudits } from '../api/audits.js';
-import { QUESTIONNAIRE_OPTIONS, AUDIT_COLUMNS } from '../constants/questionnaires.js';
+import { getExportKey, listAudits } from '../api/audits.js';
+import { listUsers } from '../api/users.js';
+import { QUESTIONNAIRE_OPTIONS, AUDIT_COLUMNS, getQuestionnaireOption } from '../constants/questionnaires.js';
 import { PANEL, SEGMENTED, ACCENT_THEME } from '../constants/styles.js';
 import Button from '../components/Button.jsx';
 import { Input, Select } from '../components/Input.jsx';
@@ -25,6 +26,26 @@ export default function RecordPage() {
   const [query, setQuery]       = useState('');
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage]         = useState(0);
+  const [exportKey, setExportKey]     = useState(null);
+  const [exportError, setExportError] = useState(null);
+  const [copied, setCopied]           = useState(false);
+  const [users, setUsers]             = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    listUsers()
+      .then(items => { if (active) setUsers(items); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getExportKey()
+      .then(({ key }) => { if (active) setExportKey(key); })
+      .catch(e => { if (active) setExportError(e.message); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -32,6 +53,7 @@ export default function RecordPage() {
     setError(null);
     setFilters({});  
     setQuery('');
+    setCopied(false);
     setPage(0);
 
     listAudits(tab)
@@ -43,10 +65,15 @@ export default function RecordPage() {
 
   const columns = AUDIT_COLUMNS[tab];
 
+  // The evaluated person is chosen among the users (by id, so a renamed user keeps their audits); the rest, among the values in use
   const options = useMemo(() => Object.fromEntries(columns.map(([key]) => [
     key,
-    [...new Set((audits ?? []).map(a => a[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es', { numeric: true })),
-  ])), [audits, columns]);
+    key === 'evaluatedPerson'
+      ? users.map(u => ({ value: u.id, label: u.name }))
+      : [...new Set((audits ?? []).map(a => a[key]).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
+          .map(v => ({ value: v, label: v })),
+  ])), [audits, columns, users]);
 
   const searchable = useMemo(() => new Map((audits ?? []).map(a => [
     a.auditId,
@@ -56,7 +83,7 @@ export default function RecordPage() {
   const terms = normalize(query).split(/\s+/).filter(Boolean);  
   const activeFilters = Object.entries(filters).filter(([, v]) => v);
   const filtered  = (audits ?? []).filter(a =>
-    activeFilters.every(([key, v]) => a[key] === v) &&
+    activeFilters.every(([key, v]) => (key === 'evaluatedPerson' ? a.auditor === v : a[key] === v)) &&
     terms.every(t => searchable.get(a.auditId).includes(t))
   );
 
@@ -69,10 +96,36 @@ export default function RecordPage() {
   const start     = pageSize ? current * pageSize : 0;
   const rows      = pageSize ? filtered.slice(start, start + pageSize) : filtered;
 
+  const exportUrl = exportKey
+    ? `${window.location.origin}/api/export/audits.csv?questionnaireKey=${tab}&key=${exportKey}`
+    : null;
+
+  async function handleCopy(e) {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(exportUrl);
+      setCopied(true);
+    } catch {
+      setExportError('No se pudo copiar. Copia el enlace con el botón derecho.');
+    }
+  }
+
   return (
     <PageContainer size="xl">
       <h1 className="text-2xl font-semibold text-text">Registro de evaluaciones</h1>
       <p className="mt-1 text-sm text-text-muted">Todas las evaluaciones realizadas, de la más reciente a la más antigua.</p>
+
+      <section aria-label="Power BI" className={`mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm ${PANEL}`}>
+        <FileSpreadsheet size={18} className="shrink-0 text-accent" />
+        <span className="font-medium text-text">Power BI</span>
+        {exportUrl && (
+          <a href={exportUrl} onClick={handleCopy} className="font-medium text-accent hover:underline">
+            Copiar enlace de {getQuestionnaireOption(tab).title} para Power BI
+          </a>
+        )}
+        {copied && <span role="status" className="text-text-muted">Copiado. En Power BI: Obtener datos → Web.</span>}
+        {exportError && <span role="alert" className="w-full text-danger">{exportError}</span>}
+      </section>
 
       <div role="tablist" className={`mt-6 ${SEGMENTED}`}>
         {QUESTIONNAIRE_OPTIONS.map(({ key, title, Icon }) => {
@@ -122,7 +175,7 @@ export default function RecordPage() {
                     {label}
                     <Select block={false} value={filters[key] ?? ''} onChange={e => setFilter(key, e.target.value)} className="min-w-36">
                       <option value="">Todos</option>
-                      {options[key].map(v => <option key={v} value={v}>{v}</option>)}
+                      {options[key].map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </Select>
                   </label>
                 ))}

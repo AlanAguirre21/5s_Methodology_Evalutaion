@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
 import CatalogSelect from './CatalogSelect.jsx';
+import EvaluatedPerson from './EvaluatedPerson.jsx';
 import Button from './Button.jsx';
 import { Label } from './Input.jsx';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
@@ -21,10 +22,9 @@ export default function FloorForm({ option, catalog, onSubmit, submitting, error
   const [centroCoste, setCentroCoste] = useState('');
   const [area, setArea]               = useState('');
   const [supervisor, setSupervisor]   = useState('');
-  const [personaEvaluada, setPersonaEvaluada] = useState('');
 
   const { title, Icon } = option;
-  const isValid = [centroCoste, area, supervisor, personaEvaluada].every(v => v.trim() !== '');
+  const isValid = [centroCoste, area, supervisor].every(v => v.trim() !== '');
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -33,7 +33,6 @@ export default function FloorForm({ option, catalog, onSubmit, submitting, error
       costCenter: centroCoste.trim(),
       area: area.trim(),
       supervisor: supervisor.trim(),
-      evaluatedPerson: personaEvaluada.trim(),
     });
   }
 
@@ -87,16 +86,7 @@ export default function FloorForm({ option, catalog, onSubmit, submitting, error
           />
         </Field>
 
-        <Field label="Persona evaluada" htmlFor="persona_evaluada">
-          <CatalogSelect
-            id="persona_evaluada"
-            value={personaEvaluada}
-            onChange={setPersonaEvaluada}
-            entries={catalog?.evaluatedPerson ?? null}
-            placeholder="Selecciona persona evaluada"
-            tab="piso"
-          />
-        </Field>
+        <EvaluatedPerson />
 
         {error && <StatusMessage error={error} />}
 

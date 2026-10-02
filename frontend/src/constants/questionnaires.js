@@ -33,6 +33,11 @@ export const HEADER_FIELDS = {
   ],
 };
 
+// Fields chosen from the catalog; the evaluated person is always the logged-in user
+export const CATALOG_FIELDS = Object.fromEntries(
+  Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.filter(f => f.key !== 'evaluatedPerson')])
+);
+
 // { piso: [[key, label], …], oficina: […] } — the columns of the audit tables
 export const AUDIT_COLUMNS = Object.fromEntries(
   Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.map(f => [f.key, f.label])])

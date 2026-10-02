@@ -4,7 +4,7 @@ import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import FloorForm from '../components/FloorForm.jsx';
 import OfficeForm from '../components/OfficeForm.jsx';
-import { getQuestionnaireOption, HEADER_FIELDS } from '../constants/questionnaires.js';
+import { getQuestionnaireOption, CATALOG_FIELDS } from '../constants/questionnaires.js';
 import { startAudit } from '../api/audits.js';
 import { listCatalog } from '../api/catalog.js';
 
@@ -22,7 +22,7 @@ export default function AuditFormPage() {
   const [error, setError]           = useState(null);
 
   useEffect(() => {
-    const fields = HEADER_FIELDS[questionnaireKey];
+    const fields = CATALOG_FIELDS[questionnaireKey];
     if (!fields) return;
     let active = true;
     setError(null);      

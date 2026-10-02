@@ -1,56 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { ChevronRight, FileSpreadsheet } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
+import OptionCard from '../components/OptionCard.jsx';
 import { listQuestionnaires } from '../api/questionnaires.js';
 import { QUESTIONNAIRE_OPTIONS } from '../constants/questionnaires.js';
-import { CHIP, PANEL, ACCENT_THEME } from '../constants/styles.js';
+import { CHIP, PANEL } from '../constants/styles.js';
 
 const FIVE_S = ['Seiri', 'Seiton', 'Seiso', 'Seiketsu', 'Shitsuke'];
-
-const POWER_BI_OPTION = {
-  key: 'powerbi',
-  title: 'Exportar a Power BI',
-  description: 'Descarga los resultados de las auditorías para analizarlos por área, por S y a lo largo del tiempo en tus tableros de Power BI.',
-  Icon: FileSpreadsheet,
-  actionLabel: 'Exportar datos',
-};
-const POWER_BI_STATUS = 'unavailable';   // switch to 'available' once the export exists
-
-function OptionCard({ option, status }) {
-  const { title, description, Icon, actionLabel = 'Iniciar evaluación' } = option;
-  const enabled = status === 'available';
-  const theme = ACCENT_THEME;
-
-  const label = {
-    loading: 'Cargando…',
-    available: actionLabel,
-    unavailable: 'Próximamente',
-  }[status];
-
-  return (
-    <>
-      <span
-        className={`flex h-12 w-12 items-center justify-center rounded-control ${
-          enabled ? theme.icon : 'bg-white/50 text-text-faint'
-        }`}
-      >
-        <Icon size={24} />
-      </span>
-      <h2 className="mt-4 text-lg font-semibold text-text">{title}</h2>
-      <p className="mt-1 flex-1 text-sm text-text-muted">{description}</p>
-      <span
-        className={`mt-6 flex items-center gap-1 text-sm font-semibold ${
-          enabled ? theme.label : 'text-text-faint'
-        }`}
-      >
-        {label}
-        {enabled && <ChevronRight size={16} />}
-      </span>
-    </>
-  );
-}
 
 export default function HomePage() {
   const [availableKeys, setAvailableKeys] = useState(null);   // null = still loading
@@ -121,20 +78,6 @@ export default function HomePage() {
             </div>
           );
         })}
-
-        {/* Power BI export: same card as the questionnaires, full width */}
-        {POWER_BI_STATUS === 'available' ? (
-          <button
-            type="button"
-            className={`${cardBase} text-left transition-all hover:bg-white/60 hover:ring-2 hover:ring-accent/30 sm:col-span-2`}
-          >
-            <OptionCard option={POWER_BI_OPTION} status={POWER_BI_STATUS} />
-          </button>
-        ) : (
-          <div aria-disabled="true" className={`${cardBase} cursor-not-allowed opacity-40 sm:col-span-2`}>
-            <OptionCard option={POWER_BI_OPTION} status={POWER_BI_STATUS} />
-          </div>
-        )}
       </section>
     </PageContainer>
   );

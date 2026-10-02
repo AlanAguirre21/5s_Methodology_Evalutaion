@@ -21,7 +21,6 @@ const DEFAULT_PERIOD = '1y';
 const CUSTOM = 'custom';
 const PAGE_SIZE = 10;
 
-// Date <-> value of <input type="date">, in local time
 const toInput = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const startOfDay = value => new Date(`${value}T00:00:00`);
 const endOfDay   = value => new Date(`${value}T23:59:59.999`);

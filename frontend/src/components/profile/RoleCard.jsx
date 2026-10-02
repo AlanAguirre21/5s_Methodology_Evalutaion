@@ -1,24 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck, User } from 'lucide-react';
 import Button from '../Button.jsx';
 import ConfirmModal from '../ui/ConfirmModal.jsx';
-import { updateUserRole } from '../../api/users.js';
+import { listUsers, updateUserRole } from '../../api/users.js';
 import { ROLES, ROLE_LABELS } from '../../constants/roles.js';
 import { PANEL } from '../../constants/styles.js';
 
 const ROLE_DESCRIPTIONS = {
-  admin: 'Puede realizar evaluaciones y gestionar los usuarios y sus roles.',
-  user:  'Puede realizar evaluaciones y consultar los registros.',
+  admin: 'Puede realizar evaluaciones, consultar el registro de todas y gestionar los usuarios y sus roles.',
+  user:  'Puede realizar evaluaciones y consultar su propio historial.',
 };
 
-// The role is read-only. Only an admin can change it, and changing their own asks first.
 export default function RoleCard({ user, onSaved }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy]   = useState(false);
   const [error, setError] = useState(null);
 
+  const [onlyAdmin, setOnlyAdmin] = useState(false);
+
   const isAdmin = user.role === ROLES.ADMIN;
   const Icon = isAdmin ? ShieldCheck : User;
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    let active = true;
+    listUsers()
+      .then(users => { if (active) setOnlyAdmin(users.filter(u => u.role === ROLES.ADMIN).length <= 1); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [isAdmin]);
 
   async function handleConfirm() {
     setBusy(true);
@@ -49,9 +59,16 @@ export default function RoleCard({ user, onSaved }) {
       </div>
 
       {isAdmin ? (
-        <Button className="mt-4" onClick={() => { setError(null); setConfirming(true); }}>
-          Cambiar mi rol a {ROLE_LABELS[ROLES.USER]}
-        </Button>
+        <>
+          <Button className="mt-4" disabled={onlyAdmin} onClick={() => { setError(null); setConfirming(true); }}>
+            Cambiar mi rol a {ROLE_LABELS[ROLES.USER]}
+          </Button>
+          {onlyAdmin && (
+            <p className="mt-2 text-xs text-text-faint">
+              Eres el único administrador y debe quedar al menos uno. Asigna el rol a otro usuario antes de cambiar el tuyo.
+            </p>
+          )}
+        </>
       ) : (
         <p className="mt-4 text-xs text-text-faint">Solo un administrador puede cambiar tu rol.</p>
       )}

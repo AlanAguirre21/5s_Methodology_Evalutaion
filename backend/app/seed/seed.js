@@ -2,14 +2,13 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import Questionnaire from '../models/Questionnaire.js';
 import Area from '../models/Area.js';
-import User, { NAME_COLLATION, cleanName } from '../models/User.js';
-import { ROLES } from '../constants/roles.js';
+import User from '../models/User.js';
+import ensureAdmin from '../utils/ensureAdmin.js';
 import floor from './floor.json' with { type: 'json' };
 import office from './office.json' with { type: 'json' };
 
 const QUESTIONNAIRES = [floor, office];
 const AREAS = ['Almacén', 'Producción', 'Mantenimiento'];
-const ADMIN_NAME = cleanName(process.env.ADMIN_NAME) || 'Admin 01';   // first admin, so someone can create the others
 const FIVE_S = ['seiri', 'seiton', 'seiso', 'seiketsu', 'shitsuke'];
 const FIVE_S_KEYS = ['piso']; 
 
@@ -51,12 +50,8 @@ try {
 
   // Drops indexes the schema no longer has (the old unique "username") and builds the unique "name" one
   await User.syncIndexes();
-  await User.updateOne(
-    { name: ADMIN_NAME },
-    { $setOnInsert: { name: ADMIN_NAME, role: ROLES.ADMIN } },
-    { upsert: true, collation: NAME_COLLATION },
-  );
-  console.log(`Admin user ensured: ${ADMIN_NAME}`);
+  const createdAdmin = await ensureAdmin();
+  console.log(createdAdmin ? `No admin found: "${createdAdmin}" is now an admin` : 'Admin user: already exists');
 } catch (err) {
   console.error('Seed failed:', err.message);
   process.exitCode = 1;

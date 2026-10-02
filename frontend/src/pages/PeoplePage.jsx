@@ -4,17 +4,17 @@ import { ChevronLeft, ChevronRight, Plus, Search, Trash2 } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import { listCatalog, addCatalogEntry, deleteCatalogEntry } from '../api/catalog.js';
-import { QUESTIONNAIRE_OPTIONS, HEADER_FIELDS } from '../constants/questionnaires.js';
+import { QUESTIONNAIRE_OPTIONS, CATALOG_FIELDS } from '../constants/questionnaires.js';
 import Button from '../components/Button.jsx';
 import { Input, Select } from '../components/Input.jsx';
 import { PANEL, SEGMENTED, ACCENT_THEME } from '../constants/styles.js';
 
 const CARD_ORDER = {
-  oficina: ['workshop', 'department', 'supervisor', 'evaluatedPerson'],
+  oficina: ['workshop', 'department', 'supervisor'],
 };
 
 function cardFields(questionnaireKey) {
-  const fields = HEADER_FIELDS[questionnaireKey];
+  const fields = CATALOG_FIELDS[questionnaireKey];
   const order = CARD_ORDER[questionnaireKey];
   if (!order) return fields;
   const rank = key => (order.includes(key) ? order.indexOf(key) : order.length);

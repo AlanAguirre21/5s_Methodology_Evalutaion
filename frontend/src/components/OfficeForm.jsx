@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
 import CatalogSelect from './CatalogSelect.jsx';
+import EvaluatedPerson from './EvaluatedPerson.jsx';
+import { useAuth } from '../hooks/useAuth.js';
 import Button from './Button.jsx';
 import { Label } from './Input.jsx';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
@@ -19,19 +21,19 @@ function Field({ label, htmlFor, children }) {
 
 export default function OfficeForm({ option, catalog, onSubmit, submitting, error }) {
   const [departamento, setDepartamento] = useState('');
-  const [persona, setPersona]           = useState('');
   const [taller, setTaller]             = useState('');
   const [supervisor, setSupervisor]     = useState('');
 
+  const { user } = useAuth();
+
   const { title, Icon } = option;
-  const isValid = [departamento, persona, taller, supervisor].every(v => v.trim() !== '');
+  const isValid = Boolean(user.avatar) && [departamento, taller, supervisor].every(v => v.trim() !== '');
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!isValid || submitting) return;
     onSubmit({
       department: departamento.trim(),
-      evaluatedPerson: persona.trim(),
       workshop: taller.trim(),
       supervisor: supervisor.trim(),
     });
@@ -65,16 +67,7 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
           />
         </Field>
 
-        <Field label="Persona evaluada" htmlFor="persona">
-          <CatalogSelect
-            id="persona"
-            value={persona}
-            onChange={setPersona}
-            entries={catalog?.evaluatedPerson ?? null}
-            placeholder="Selecciona persona evaluada"
-            tab="oficina"
-          />
-        </Field>
+        <EvaluatedPerson photoRequired />
 
         <Field label="Taller" htmlFor="taller">
           <CatalogSelect
