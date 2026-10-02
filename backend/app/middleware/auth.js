@@ -6,7 +6,7 @@ import HttpError from '../utils/HttpError.js';
 export async function identify(req, res, next) {
   const [scheme, token] = (req.headers.authorization ?? '').split(' ');
   if (scheme === 'Bearer' && mongoose.isValidObjectId(token)) {
-    req.user = await User.findOne({ _id: token, active: true }).lean();
+    req.user = await User.findOne({ _id: token, active: true }).select('-avatar').lean();   // the picture is only loaded where it's returned
   }
   next();
 }

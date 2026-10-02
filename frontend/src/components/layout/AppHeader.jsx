@@ -1,11 +1,12 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
-import { LogOut, UserPlus } from 'lucide-react';
+import { LogOut, Users } from 'lucide-react';
 import SM_logo from '../../../public/SF_logo.svg';
 import { useAuth } from '../../hooks/useAuth.js';
+import UserAvatar from '../profile/UserAvatar.jsx';
 import { ROLES, ROLE_LABELS } from '../../constants/roles.js';
 
 const linkClass = ({ isActive }) =>
-  `rounded-control px-3 py-1.5 text-sm font-medium transition-all ${
+  `rounded-control px-2 py-1.5 text-xs font-medium transition-all ${
     isActive ? 'neu-raised bg-white/60 text-accent' : 'text-text-muted hover:bg-white/50 hover:text-text'
   }`;
 
@@ -29,35 +30,48 @@ export default function AppHeader() {
 
         {user && (
           <nav className="flex items-center gap-1">
+            {!isHome && (
+              <NavLink to="/" end className={linkClass}>
+                Inicio
+              </NavLink>
+            )}
+            
             <NavLink to="/personas" className={linkClass}>
               <span className="hidden sm:inline">Elementos de auditoría</span>
               <span className="sm:hidden">Elementos</span>
             </NavLink>
             <NavLink to="/registro" className={linkClass}>
               <span className="hidden sm:inline">Registro de evaluaciones</span>
-              <span className="sm:hidden">Evaluaciones</span>
+              <span className="sm:hidden">Registro</span>
             </NavLink>
-            {!isHome && (
-              <NavLink to="/" end className={linkClass}>
-                Inicio
-              </NavLink>
-            )}
+            <NavLink to="/historial" className={linkClass}>
+              <span className="hidden sm:inline">Historial de evaluaciones</span>
+              <span className="sm:hidden">Historial</span>
+            </NavLink>
             {user.role === ROLES.ADMIN && (
-              <NavLink to="/usuarios/nuevo" className={linkClass} aria-label="Nuevo usuario" title="Nuevo usuario">
-                <UserPlus size={16} />
+              <NavLink
+                to="/usuarios"
+                end
+                className={state => `${linkClass(state)} inline-flex items-center gap-2`}
+              >
+                <Users size={16} />
+                Usuarios
               </NavLink>
             )}
 
-            <span
-              className="ml-2 hidden max-w-50 truncate border-l border-border-strong pl-3 text-sm text-muted md:inline"
-              title={`${user.username} · ${ROLE_LABELS[user.role]}`}
+            <NavLink
+              to="/perfil"
+              className="ml-2 flex min-w-0 items-center gap-2 border-l border-border-strong pl-3 text-sm font-medium text-text-muted hover:text-text"
+              title={`Mi perfil · ${user.name} · ${ROLE_LABELS[user.role]}`}
+              aria-label="Mi perfil"
             >
-              {user.name}
-            </span>
+              <UserAvatar user={user} size={28} />
+              <span className="hidden max-w-40 truncate md:inline">{user.name}</span>
+            </NavLink>
             <button
               onClick={handleLogout}
               aria-label="Cerrar sesión"
-              title={`Cerrar sesión (${user.username})`}
+              title={`Cerrar sesión (${user.name})`}
               className="rounded-control p-2 text-text-muted transition-all hover:bg-white/50 hover:text-danger"
             >
               <LogOut size={16} />

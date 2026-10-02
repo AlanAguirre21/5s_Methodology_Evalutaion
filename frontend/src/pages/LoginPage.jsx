@@ -12,13 +12,13 @@ export default function LoginPage() {
   const { user, login } = useAuth();
   const location = useLocation();
 
-  const [username, setUsername]     = useState('');
+  const [name, setName]             = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState(null);
 
   if (user) return <Navigate to={location.state?.from ?? '/'} replace />;
 
-  const isValid = username.trim() !== '';
+  const isValid = name.trim() !== '';
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -27,7 +27,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(username.trim());
+      await login(name.trim());
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -48,17 +48,16 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className={`mt-6 space-y-4 p-6 ${PANEL}`}>
         <div>
-          <Label htmlFor="username">Usuario</Label>
+          <Label htmlFor="name">Nombre</Label>
           <Input
-            id="username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            maxLength={30}
+            id="name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            maxLength={100}
             autoFocus
-            autoComplete="username"
-            autoCapitalize="none"
+            autoComplete="name"
             spellCheck={false}
-            placeholder="Tu nombre de usuario"
+            placeholder="Tu nombre completo"
           />
         </div>
 
@@ -70,7 +69,7 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-4 text-center text-sm text-text-muted">
-        ¿No tienes usuario?{' '}
+        ¿Aún no estás registrado?{' '}
         <Link to="/usuarios/nuevo" className="font-medium text-accent hover:underline">Regístrate</Link>
       </p>
     </PageContainer>

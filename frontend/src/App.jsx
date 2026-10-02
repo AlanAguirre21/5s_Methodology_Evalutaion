@@ -11,6 +11,11 @@ import PeoplePage from './pages/PeoplePage.jsx';
 import AuditDetailPage from './pages/AuditDetailPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import NewUserPage from './pages/users/NewUserPage.jsx';
+import ProfilePage from './pages/users/ProfilePage.jsx';
+import ProfileRecordPage from './pages/users/ProfileRecordPage.jsx';
+import UsersPage from './pages/users/UsersPage.jsx';
+import RequireRole from './auth/RequireRole.jsx';
+import { ROLES } from './constants/roles.js';
 
 export default function App() {
   return (
@@ -20,9 +25,13 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/usuarios/nuevo" element={<NewUserPage />} />
-
             <Route element={<RequireAuth />}>
               <Route path="/" element={<HomePage />} />
+              <Route path="/perfil" element={<ProfilePage />} />
+              <Route path="/historial" element={<ProfileRecordPage />} />
+              <Route element={<RequireRole roles={[ROLES.ADMIN]} />}>
+                <Route path="/usuarios" element={<UsersPage />} />
+              </Route>
               <Route path="/registro" element={<RecordPage />} />
               <Route path="/registro/:auditId" element={<AuditDetailPage />} />
               <Route path="/personas" element={<PeoplePage />} />

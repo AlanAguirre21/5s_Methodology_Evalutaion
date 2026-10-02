@@ -36,31 +36,34 @@ export function DeviationBar({ active, text, onTextChange, onSend, disabled }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex shrink-0 items-end gap-2 border-t border-white/40 px-4 py-3.5">
-      <label htmlFor="deviation" className="sr-only">Describe la desviación</label>
-      <textarea
-        id="deviation"
-        rows={active ? 2 : 1}
-        maxLength={DEVIATION_MAX}
-        value={text}
-        onChange={e => onTextChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={!active || disabled}
-        autoFocus={active}
-        placeholder={active ? 'Describe la desviación…' : 'Responde con Sí o No'}
-        className="neu-inset max-h-32 flex-1 resize-none rounded-2xl border border-white/50 bg-white/50 px-4 py-2
-          text-sm text-text placeholder:text-text-faint transition-shadow focus:outline-none focus:ring-2 focus:ring-accent/30
-          disabled:cursor-not-allowed"
-      />
-      <button
-        type="submit"
-        disabled={!canSend}
-        aria-label="Enviar desviación"
-        className="neu-raised flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-[#409CFF]
-          text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:active:scale-100"
-      >
-        <SendHorizontal size={16} />
-      </button>
+    <form onSubmit={handleSubmit} className="shrink-0 border-t border-white/40 px-4 py-3.5">
+      {active && <span aria-hidden="true" className="mb-1.5 block px-1 text-sm font-medium text-text-muted">¿Por qué?</span>}
+      <div className="flex items-end gap-2">
+        <label htmlFor="deviation" className="sr-only">Describe la desviación</label>
+        <textarea
+          id="deviation"
+          rows={active ? 2 : 1}
+          maxLength={DEVIATION_MAX}
+          value={text}
+          onChange={e => onTextChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={!active || disabled}
+          autoFocus={active}
+          placeholder={active ? 'Describe la desviación…' : 'Responde con Sí o No'}
+          className="neu-inset max-h-32 flex-1 resize-none rounded-2xl border border-white/50 bg-white/50 px-4 py-2
+            text-sm text-text placeholder:text-text-faint transition-shadow focus:outline-none focus:ring-2 focus:ring-accent/30
+            disabled:cursor-not-allowed"
+        />
+        <button
+          type="submit"
+          disabled={!canSend}
+          aria-label="Enviar desviación"
+          className="neu-raised flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-[#409CFF]
+            text-white transition-all hover:brightness-110 active:scale-95 disabled:opacity-40 disabled:active:scale-100"
+        >
+          <SendHorizontal size={16} />
+        </button>
+      </div>
     </form>
   );
 }

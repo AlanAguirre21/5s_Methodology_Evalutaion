@@ -69,7 +69,7 @@ function requireText(value, name) {
   return value.trim();
 }
 
-export async function start({ questionnaireKey, ...body }) {
+export async function start({ questionnaireKey, ...body }, auditorId) {
   if (typeof questionnaireKey !== 'string') throw new HttpError(400, 'questionnaireKey is required');
   const names = HEADER_FIELDS[questionnaireKey];
   if (!names) throw new HttpError(404, 'Questionnaire not found');
@@ -85,31 +85,29 @@ export async function start({ questionnaireKey, ...body }) {
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
 
-  const audit = await Audit.create({ questionnaire: questionnaire._id, ...fields });
+  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: auditorId, ...fields });
   return buildState(audit, questionnaire);
 }
 
-export async function list(questionnaireKey) {
-  if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
-
-  const questionnaires = await Questionnaire.find({ key: questionnaireKey }).select('sections.questions._id').lean();
-  const totals = new Map(questionnaires.map(q => [
+// id -> { key, total questions } of the questionnaires (every version) that match the filter
+async function questionnaireInfo(filter) {
+  const questionnaires = await Questionnaire.find(filter).select('key sections.questions._id').lean();
+  return new Map(questionnaires.map(q => [
     q._id.toString(),
-    q.sections.reduce((n, s) => n + s.questions.length, 0),
+    { key: q.key, total: q.sections.reduce((n, s) => n + s.questions.length, 0) },
   ]));
+}
 
-  const audits = await Audit.find({ questionnaire: { $in: [...totals.keys()] } })
-    .sort({ createdAt: -1 })
-    .limit(500)
-    .lean();
-
-  return audits.map(a => ({
+function toListItem(a, info) {
+  const questionnaire = info.get(a.questionnaire.toString());
+  return {
     auditId: a._id,
+    questionnaireKey: questionnaire?.key,
     status: a.status,
     createdAt: a.createdAt,
     completedAt: a.completedAt,
     answered: a.answers.length,
-    total: totals.get(a.questionnaire.toString()),
+    total: questionnaire?.total,
     score: a.score,
     result: a.result,
     costCenter: a.costCenter,
@@ -118,7 +116,44 @@ export async function list(questionnaireKey) {
     department: a.department,
     workshop: a.workshop,
     evaluatedPerson: a.evaluatedPerson,
-  }));
+  };
+}
+
+export async function list(questionnaireKey) {
+  if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
+
+  const info = await questionnaireInfo({ key: questionnaireKey });
+
+  const audits = await Audit.find({ questionnaire: { $in: [...info.keys()] } })
+    .sort({ createdAt: -1 })
+    .limit(500)
+    .lean();
+
+  return audits.map(a => toListItem(a, info));
+}
+
+function parseDate(value, name) {
+  const date = new Date(value);
+  if (typeof value !== 'string' || Number.isNaN(date.getTime())) throw new HttpError(400, `${name} must be a valid date`);
+  return date;
+}
+
+// Audits made by one user, of every questionnaire type, started between "from" and "to" (default: the last year)
+export async function listByAuditor(auditorId, from, to) {
+  const end = to === undefined ? new Date() : parseDate(to, 'to');
+  const start = from === undefined
+    ? new Date(new Date(end).setFullYear(end.getFullYear() - 1))
+    : parseDate(from, 'from');
+  if (start > end) throw new HttpError(400, 'from must be before to');
+
+  const info = await questionnaireInfo({});
+
+  const audits = await Audit.find({ auditor: auditorId, createdAt: { $gte: start, $lte: end } })
+    .sort({ createdAt: -1 })
+    .limit(1000)
+    .lean();
+
+  return audits.map(a => toListItem(a, info));
 }
 
 export async function getState(id) {

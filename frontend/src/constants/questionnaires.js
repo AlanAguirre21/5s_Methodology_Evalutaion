@@ -32,3 +32,8 @@ export const HEADER_FIELDS = {
     { key: 'supervisor',    label: 'Supervisor' },
   ],
 };
+
+// { piso: [[key, label], …], oficina: […] } — the columns of the audit tables
+export const AUDIT_COLUMNS = Object.fromEntries(
+  Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.map(f => [f.key, f.label])])
+);

@@ -7,7 +7,7 @@ import { listCatalog, addCatalogEntry, deleteCatalogEntry } from '../api/catalog
 import { QUESTIONNAIRE_OPTIONS, HEADER_FIELDS } from '../constants/questionnaires.js';
 import Button from '../components/Button.jsx';
 import { Input, Select } from '../components/Input.jsx';
-import { PANEL, SEGMENTED, TYPE_THEMES } from '../constants/styles.js';
+import { PANEL, SEGMENTED, ACCENT_THEME } from '../constants/styles.js';
 
 const CARD_ORDER = {
   oficina: ['workshop', 'department', 'supervisor', 'evaluatedPerson'],
@@ -244,7 +244,7 @@ export default function PeoplePage() {
               aria-selected={selected}
               onClick={() => setSearchParams({ tab: key }, { replace: true })}
               className={`flex items-center gap-2 rounded-control px-4 py-2 text-sm font-medium transition-all ${
-                selected ? TYPE_THEMES[key].tab : 'text-text-muted hover:bg-white/60'
+                selected ? ACCENT_THEME.tab : 'text-text-muted hover:bg-white/60'
               }`}
             >
               <Icon size={16} /> {title}

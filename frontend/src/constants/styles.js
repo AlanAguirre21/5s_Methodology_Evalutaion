@@ -17,8 +17,3 @@ export const ACCENT_THEME = {
   label:  'text-accent',
   button: 'bg-accent text-white hover:brightness-110 shadow-md shadow-accent/25',
 };
-
-export const TYPE_THEMES = {
-  piso:    ACCENT_THEME,
-  oficina: ACCENT_THEME,
-};

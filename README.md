@@ -16,6 +16,9 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
 - **Resultado:** puntos obtenidos, calificación 0–100 y nivel (p. ej. *Puntaje Objetivo*).
 - **Registro de evaluaciones** (`/registro`): pestañas Piso / Oficina, filtros por cada campo, 10 / 25 / 50 / 100 / todas las filas por página.
 - **Detalle de cada evaluación:** calificación, puntos por sección y todas las preguntas con su respuesta y desviación.
+- **Perfil** (`/perfil`): nombre, foto y rol del usuario. El rol es de solo lectura; un administrador puede cambiar el suyo tras confirmar.
+- **Historial** (`/historial`): evaluaciones realizadas por el usuario en un periodo (un año por defecto), con gráfica de calificaciones.
+- **Usuarios** (`/usuarios`, solo administrador): lista de usuarios, cambio de rol y alta de usuarios.
 - **Registro de personas** (`/personas`): catálogo de valores por tipo y campo, con búsqueda y paginación. **Solo los valores registrados aquí aparecen en los formularios**, y el backend rechaza cualquier otro.
 
 ## Tecnologías
@@ -141,21 +144,26 @@ Base: `http://localhost:3000/api`
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST   | `/auth/login` | Identificarse con `{ username }`; devuelve `{ token, user }` |
+| POST   | `/auth/login` | Identificarse con `{ name }`; devuelve `{ token, user }` |
 | GET    | `/auth/me` | Usuario de la sesión actual |
-| POST   | `/users` | Crear usuario `{ username, name, role? }`; solo un administrador puede asignar `role: "admin"` |
+| GET    | `/users` | Lista de usuarios (solo administrador) |
+| POST   | `/users` | Crear usuario `{ name, role? }`; solo un administrador puede asignar `role: "admin"` |
+| PATCH  | `/users/me` | Editar el perfil propio `{ name?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
+| PATCH  | `/users/:id/role` | Cambiar el rol `{ role }` (solo administrador; siempre debe quedar al menos uno) |
 | GET    | `/questionnaires` | Tipos de cuestionario disponibles |
 | GET    | `/catalog?questionnaireKey=piso\|oficina` | Valores registrados por campo |
 | POST   | `/catalog` | Registrar un valor `{ questionnaireKey, field, value }` |
 | DELETE | `/catalog/:id` | Eliminar un valor (las evaluaciones anteriores no cambian) |
 | GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones, más recientes primero |
+| GET    | `/audits/mine?from=&to=` | Evaluaciones realizadas por el usuario de la sesión en el periodo (por defecto, el último año) |
 | POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo |
 | GET    | `/audits/:id` | Estado completo de una evaluación |
 | POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` |
 
 Salvo `/auth/login` y `/users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
-El inicio de sesión es solo **identificación** (nombre de usuario, sin contraseña): el token es el id del usuario.
-`npm run seed` crea el primer administrador (`admin`, o el valor de `ADMIN_USERNAME` en `backend/.env`).
+El inicio de sesión es solo **identificación** (solo el nombre, sin contraseña): el token es el id del usuario.
+El nombre es único y se compara sin distinguir mayúsculas ni acentos (`juan perez` = `Juan Pérez`).
+`npm run seed` crea el primer administrador (`Admin 01`, o el valor de `ADMIN_NAME` en `backend/.env`).
 
 Campos para iniciar una evaluación:
 

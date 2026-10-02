@@ -14,6 +14,7 @@ const SectionScoreSchema = new Schema({
 
 const AuditSchema = new Schema({
   questionnaire: { type: Schema.Types.ObjectId, ref: 'Questionnaire', required: true },
+  auditor:       { type: Schema.Types.ObjectId, ref: 'User', default: null },   // user who made it; null in audits from before users existed
   costCenter:    { type: String, trim: true, maxlength: 100 },     
   area:          { type: String, trim: true, maxlength: 100 },    
   supervisor:    { type: String, trim: true, maxlength: 100 },     
@@ -29,5 +30,6 @@ const AuditSchema = new Schema({
 }, { timestamps: true });
 
 AuditSchema.index({ area: 1, completedAt: -1 });
+AuditSchema.index({ auditor: 1, createdAt: -1 });
 
 export default model('Audit', AuditSchema);

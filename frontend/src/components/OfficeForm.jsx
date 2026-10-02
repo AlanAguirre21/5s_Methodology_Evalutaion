@@ -6,7 +6,7 @@ import StatusMessage from './StatusMessage.jsx';
 import CatalogSelect from './CatalogSelect.jsx';
 import Button from './Button.jsx';
 import { Label } from './Input.jsx';
-import { PANEL, TYPE_THEMES } from '../constants/styles.js';
+import { PANEL, ACCENT_THEME } from '../constants/styles.js';
 
 function Field({ label, htmlFor, children }) {
   return (
@@ -44,7 +44,7 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
       </Link>
 
       <div className="mt-4 flex items-center gap-3">
-        <span className={`neu-raised flex h-10 w-10 items-center justify-center rounded-control ${TYPE_THEMES.oficina.icon}`}>
+        <span className={`neu-raised flex h-10 w-10 items-center justify-center rounded-control ${ACCENT_THEME.icon}`}>
           <Icon size={20} />
         </span>
         <div>
@@ -100,7 +100,7 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
 
         {error && <StatusMessage error={error} />}
 
-        <Button type="submit" size="lg" variant={TYPE_THEMES.oficina.button} disabled={!isValid || submitting}>
+        <Button type="submit" size="lg" variant={ACCENT_THEME.button} disabled={!isValid || submitting}>
           {submitting ? 'Iniciando…' : 'Iniciar auditoría'}
         </Button>
       </form>
