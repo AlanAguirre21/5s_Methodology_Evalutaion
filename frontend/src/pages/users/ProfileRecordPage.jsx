@@ -8,6 +8,7 @@ import ScoreChart from '../../components/ScoreChart.jsx';
 import Button from '../../components/Button.jsx';
 import { Input, Select } from '../../components/Input.jsx';
 import { listMyAudits } from '../../api/audits.js';
+import { useAuth } from '../../hooks/useAuth.js';
 import { QUESTIONNAIRE_OPTIONS } from '../../constants/questionnaires.js';
 import { PANEL, SEGMENTED, TILE, ACCENT_THEME } from '../../constants/styles.js';
 
@@ -46,6 +47,7 @@ function Stat({ label, value, hint }) {
 }
 
 export default function ProfileRecordPage() {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const tab = QUESTIONNAIRE_OPTIONS.some(o => o.key === tabParam) ? tabParam : QUESTIONNAIRE_OPTIONS[0].key;
@@ -174,7 +176,7 @@ export default function ProfileRecordPage() {
             </section>
 
             {ofTab.length > 0
-              ? <AuditTable questionnaireKey={tab} audits={rows} />
+              ? <AuditTable questionnaireKey={tab} audits={rows} users={[user]} />
               : <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>No realizaste evaluaciones de este tipo en el periodo.</p>}
 
             {ofTab.length > 0 && (

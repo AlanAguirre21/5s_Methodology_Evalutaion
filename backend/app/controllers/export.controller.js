@@ -6,7 +6,6 @@ import { HEADER_FIELDS, FIELD_LABELS } from '../constants/headerFields.js';
 
 const EXPORT_KEY = 'exportKey';
 
-// Power BI cannot send the session header, so the CSV link carries its own read-only key
 async function exportKey() {
   const setting = await Setting.findOneAndUpdate(
     { key: EXPORT_KEY },

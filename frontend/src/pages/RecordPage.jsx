@@ -195,7 +195,7 @@ export default function RecordPage() {
             </div>
 
             {rows.length > 0
-              ? <AuditTable questionnaireKey={tab} audits={rows} />
+              ? <AuditTable questionnaireKey={tab} audits={rows} users={users} />
               : <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>No hay evaluaciones que coincidan con la búsqueda y los filtros.</p>}
 
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">

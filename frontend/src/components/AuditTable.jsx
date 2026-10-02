@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import Button from './Button.jsx';
+import UserAvatar from './profile/UserAvatar.jsx';
+import PersonModal from './ui/PersonModal.jsx';
 import { HEADER_FIELDS } from '../constants/questionnaires.js';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
 
@@ -21,11 +24,18 @@ function StatusBadge({ audit }) {
   );
 }
 
-export default function AuditTable({ questionnaireKey, audits }) {
+const PHOTO_COLUMN = { oficina: 'evaluatedPerson' };
+
+export default function AuditTable({ questionnaireKey, audits, users = [] }) {
   const columns = AUDIT_COLUMNS[questionnaireKey];
   const theme = ACCENT_THEME;
+  const photoColumn = PHOTO_COLUMN[questionnaireKey];
+  const userOf = a => users.find(u => u.id === a.auditor) ?? { name: a.evaluatedPerson || '?' };
+  const [person, setPerson] = useState(null);
 
   return (
+    <>
+    <PersonModal user={person} onClose={() => setPerson(null)} />
     <div className={`overflow-x-auto ${PANEL}`}>
       <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="border-b border-border bg-white/60 text-xs   text-text-muted">
@@ -43,7 +53,23 @@ export default function AuditTable({ questionnaireKey, audits }) {
             return (
               <tr key={a.auditId} className="border-b border-white/40 hover:bg-white/50">
                 <td className="whitespace-nowrap px-4 py-3 text-text-muted">{dateFormat.format(new Date(a.completedAt ?? a.createdAt))}</td>
-                {columns.map(([key]) => <td key={key} className="px-4 py-3 text-text">{a[key] || '—'}</td>)}
+                {columns.map(([key]) => (
+                  <td key={key} className="px-4 py-3 text-text">
+                    {key === photoColumn ? (
+                      <span className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPerson(userOf(a))}
+                          aria-label={`Ver a ${userOf(a).name}`}
+                          className="shrink-0 rounded-full transition-all hover:ring-2 hover:ring-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        >
+                          <UserAvatar user={userOf(a)} size={28} />
+                        </button>
+                        {a[key] || '—'}
+                      </span>
+                    ) : (a[key] || '—')}
+                  </td>
+                ))}
                 <td className={`whitespace-nowrap px-4 py-3 text-right font-semibold ${done ? theme.label : 'text-text-faint'}`}>
                   {done ? `${a.score} / ${a.total}` : '—'}
                 </td>
@@ -66,5 +92,6 @@ export default function AuditTable({ questionnaireKey, audits }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
