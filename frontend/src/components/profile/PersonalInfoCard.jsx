@@ -7,7 +7,7 @@ import { PANEL } from '../../constants/styles.js';
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'long' });
 
-export default function PersonalInfoCard({ user, onSaved }) {
+export default function PersonalInfoCard({ user, onSaved, update = updateMe, own = true }) {
   const [name, setName]     = useState(user.name);
   const [busy, setBusy]     = useState(false);
   const [error, setError]   = useState(null);
@@ -25,7 +25,7 @@ export default function PersonalInfoCard({ user, onSaved }) {
     setSaved(false);
 
     try {
-      const updated = await updateMe({ name: cleanName });
+      const updated = await update({ name: cleanName });
       onSaved(updated);
       setName(updated.name);
       setSaved(true);
@@ -48,11 +48,13 @@ export default function PersonalInfoCard({ user, onSaved }) {
             value={name}
             onChange={e => { setName(e.target.value); setSaved(false); }}
             maxLength={100}
-            autoComplete="name"
+            autoComplete={own ? 'name' : 'off'}
             aria-describedby="profile-name-hint"
           />
           <p id="profile-name-hint" className="mt-1 text-xs text-text-faint">
-            Es el nombre con el que inicias sesión. Si lo cambias, usa el nuevo la próxima vez.
+            {own
+              ? 'Es el nombre con el que inicias sesión. Si lo cambias, usa el nuevo la próxima vez.'
+              : 'Es el nombre con el que inicia sesión. Si lo cambias, avísale para que use el nuevo.'}
           </p>
         </div>
 

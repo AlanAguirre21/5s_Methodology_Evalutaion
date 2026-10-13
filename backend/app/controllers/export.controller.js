@@ -66,7 +66,7 @@ export async function audits(req, res) {
     ['Fecha de inicio', a => isoDate(a.createdAt)],
     ['Fecha de finalización', a => isoDate(a.completedAt)],
     ...HEADER_FIELDS[questionnaireKey].map(field => [FIELD_LABELS[field], a => a[field]]),
-    ['Persona evaluada', a => a.evaluatedPerson],
+    ['Supervisor', a => a.supervisor],
     ['Estado', a => (done(a) ? 'Completada' : 'En curso')],
     ['Puntos', a => a.score],
     ['Total de preguntas', a => a.total],

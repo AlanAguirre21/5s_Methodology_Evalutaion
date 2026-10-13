@@ -65,10 +65,10 @@ export default function RecordPage() {
 
   const columns = AUDIT_COLUMNS[tab];
 
-  // The evaluated person is chosen among the users (by id, so a renamed user keeps their audits); the rest, among the values in use
+  // The supervisor is chosen among the users (by id, so a renamed user keeps their audits); the rest, among the values in use
   const options = useMemo(() => Object.fromEntries(columns.map(([key]) => [
     key,
-    key === 'evaluatedPerson'
+    key === 'supervisor'
       ? users.map(u => ({ value: u.id, label: u.name }))
       : [...new Set((audits ?? []).map(a => a[key]).filter(Boolean))]
           .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
@@ -83,7 +83,7 @@ export default function RecordPage() {
   const terms = normalize(query).split(/\s+/).filter(Boolean);  
   const activeFilters = Object.entries(filters).filter(([, v]) => v);
   const filtered  = (audits ?? []).filter(a =>
-    activeFilters.every(([key, v]) => (key === 'evaluatedPerson' ? a.auditor === v : a[key] === v)) &&
+    activeFilters.every(([key, v]) => (key === 'supervisor' ? a.auditor === v : a[key] === v)) &&
     terms.every(t => searchable.get(a.auditId).includes(t))
   );
 

@@ -10,7 +10,7 @@ import { Input, Select } from '../components/Input.jsx';
 import { PANEL, SEGMENTED, ACCENT_THEME } from '../constants/styles.js';
 
 const CARD_ORDER = {
-  oficina: ['workshop', 'department', 'supervisor'],
+  oficina: ['workshop', 'department'],
 };
 
 function cardFields(questionnaireKey) {

@@ -4,7 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
 import CatalogSelect from './CatalogSelect.jsx';
-import EvaluatedPerson from './EvaluatedPerson.jsx';
+import EvaluatedPersonSelect from './EvaluatedPersonSelect.jsx';
+import SupervisingPerson from './SupervisingPerson.jsx';
 import Button from './Button.jsx';
 import { Label } from './Input.jsx';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
@@ -19,12 +20,12 @@ function Field({ label, htmlFor, children }) {
 }
 
 export default function FloorForm({ option, catalog, onSubmit, submitting, error }) {
-  const [centroCoste, setCentroCoste] = useState('');
-  const [area, setArea]               = useState('');
-  const [supervisor, setSupervisor]   = useState('');
+  const [centroCoste, setCentroCoste]         = useState('');
+  const [area, setArea]                       = useState('');
+  const [evaluatedPerson, setEvaluatedPerson] = useState('');
 
   const { title, Icon } = option;
-  const isValid = [centroCoste, area, supervisor].every(v => v.trim() !== '');
+  const isValid = [centroCoste, area, evaluatedPerson].every(v => v.trim() !== '');
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -32,7 +33,7 @@ export default function FloorForm({ option, catalog, onSubmit, submitting, error
     onSubmit({
       costCenter: centroCoste.trim(),
       area: area.trim(),
-      supervisor: supervisor.trim(),
+      evaluatedPerson: evaluatedPerson.trim(),
     });
   }
 
@@ -75,18 +76,11 @@ export default function FloorForm({ option, catalog, onSubmit, submitting, error
           />
         </Field>
 
-        <Field label="Supervisor" htmlFor="supervisor">
-          <CatalogSelect
-            id="supervisor"
-            value={supervisor}
-            onChange={setSupervisor}
-            entries={catalog?.supervisor ?? null}
-            placeholder="Selecciona supervisor"
-            tab="piso"
-          />
+        <Field label="Persona a evaluar" htmlFor="evaluatedPerson">
+          <EvaluatedPersonSelect id="evaluatedPerson" value={evaluatedPerson} onChange={name => setEvaluatedPerson(name)} />
         </Field>
 
-        <EvaluatedPerson />
+        <SupervisingPerson />
 
         {error && <StatusMessage error={error} />}
 

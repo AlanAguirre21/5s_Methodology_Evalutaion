@@ -10,9 +10,9 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
   - **Piso de planta:** cuestionario organizado por las 5S.
   - **Oficina:** cuestionario propio (limpieza y orden, visualización, funcionalidad, seguridad, artículos privados).
 - **Formulario de inicio por tipo**, con datos que se eligen de listas:
-  - Piso: Centro de coste, Área, Supervisor.
-  - Oficina: Área/Departamento, Taller, Supervisor. Requiere que el usuario tenga foto en su perfil.
-  - La **persona evaluada** es siempre el usuario que inició sesión; no se elige.
+  - Piso: Centro de coste, Área, Persona a evaluar.
+  - Oficina: Área/Departamento, Taller, Persona a evaluar. Requiere que el usuario tenga foto en su perfil.
+  - El **supervisor** es siempre el usuario que inició sesión; no se elige.
 - **Evaluación tipo chat:** una pregunta a la vez, agrupadas por sección, con barra de progreso. Una evaluación sin terminar puede continuarse después.
 - **Resultado:** puntos obtenidos, calificación 0–100 y nivel (p. ej. *Puntaje Objetivo*).
 - **Registro de evaluaciones** (`/registro`, solo administrador): pestañas Piso / Oficina, filtros por cada campo, 10 / 25 / 50 / 100 / todas las filas por página.
@@ -148,8 +148,10 @@ Base: `http://localhost:3000/api`
 | POST   | `/auth/login` | Identificarse con `{ name }`; devuelve `{ token, user }` |
 | GET    | `/auth/me` | Usuario de la sesión actual |
 | GET    | `/users` | Lista de usuarios (solo administrador) |
-| POST   | `/users` | Crear usuario `{ name, role? }`; solo un administrador puede asignar `role: "admin"` |
+| GET    | `/users/names` | `[{ id, name, hasAvatar }]` de los usuarios, para elegir a la persona a evaluar |
+| POST   | `/users` | Crear usuario `{ name, role? }`; con sesión, solo un administrador puede crear usuarios; solo un administrador puede asignar `role: "admin"` |
 | PATCH  | `/users/me` | Editar el perfil propio `{ name?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
+| PATCH  | `/users/:id` | Editar el perfil de cualquier usuario `{ name?, avatar? }` (solo administrador) |
 | PATCH  | `/users/:id/role` | Cambiar el rol `{ role }` (solo administrador; siempre debe quedar al menos uno) |
 | GET    | `/questionnaires` | Tipos de cuestionario disponibles |
 | GET    | `/catalog?questionnaireKey=piso\|oficina` | Valores registrados por campo |
@@ -163,18 +165,18 @@ Base: `http://localhost:3000/api`
 | GET    | `/audits/:id` | Estado completo de una evaluación (quien la realizó o un administrador) |
 | POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` |
 
-Salvo `/auth/login` y `/users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
+Salvo `/auth/login` y `POST /users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
 El inicio de sesión es solo **identificación** (solo el nombre, sin contraseña): el token es el id del usuario.
 El nombre es único y se compara sin distinguir mayúsculas ni acentos (`juan perez` = `Juan Pérez`).
 Siempre debe haber al menos un administrador: no se puede quitar el rol al último, y si no existe ninguno el backend (al arrancar) y `npm run seed` crean o promueven a `Admin 01` (o el valor de `ADMIN_NAME` en `backend/.env`).
 
 Campos para iniciar una evaluación:
 
-- **piso:** `costCenter`, `area`, `supervisor`
-- **oficina:** `department`, `workshop`, `supervisor` (el usuario debe tener foto de perfil)
+- **piso:** `costCenter`, `area`, `evaluatedPerson`
+- **oficina:** `department`, `workshop`, `evaluatedPerson` (el usuario de la sesión y la persona a evaluar deben tener foto de perfil)
 
-`evaluatedPerson` no se envía: el backend guarda el nombre del usuario de la sesión.
+`supervisor` no se envía: el backend guarda el nombre del usuario de la sesión.
 
-Todos son obligatorios y deben estar registrados en el catálogo. Los errores se devuelven como `{ "error": "mensaje" }` con el código HTTP correspondiente.
+Todos son obligatorios. `evaluatedPerson` debe ser el nombre de un usuario registrado; los demás deben estar registrados en el catálogo. Los errores se devuelven como `{ "error": "mensaje" }` con el código HTTP correspondiente.
 
 > `/api/areas` es un endpoint anterior que la interfaz ya no usa.

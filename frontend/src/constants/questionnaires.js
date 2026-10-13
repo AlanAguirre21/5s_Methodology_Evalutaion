@@ -22,20 +22,22 @@ export const HEADER_FIELDS = {
   piso: [
     { key: 'costCenter', label: 'Centro de coste' },
     { key: 'area',       label: 'Área' },
+    { key: 'evaluatedPerson', label: 'Persona a evaluar' },
     { key: 'supervisor', label: 'Supervisor' },
-    { key: 'evaluatedPerson', label: 'Persona evaluada' },
   ],
   oficina: [
     { key: 'department',    label: 'Área/Departamento' },
-    { key: 'evaluatedPerson', label: 'Persona evaluada' },
     { key: 'workshop',      label: 'Taller' },
+    { key: 'evaluatedPerson', label: 'Persona a evaluar' },
     { key: 'supervisor',    label: 'Supervisor' },
   ],
 };
 
-// Fields chosen from the catalog; the evaluated person is always the logged-in user
+// Fields chosen from the catalog; the supervisor is the logged-in user and the evaluated person is a registered user
+const NOT_IN_CATALOG = ['supervisor', 'evaluatedPerson'];
+
 export const CATALOG_FIELDS = Object.fromEntries(
-  Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.filter(f => f.key !== 'evaluatedPerson')])
+  Object.entries(HEADER_FIELDS).map(([type, fields]) => [type, fields.filter(f => !NOT_IN_CATALOG.includes(f.key))])
 );
 
 // { piso: [[key, label], …], oficina: […] } — the columns of the audit tables

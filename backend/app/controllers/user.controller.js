@@ -21,7 +21,17 @@ export async function list(req, res) {
   res.json(users.map(toPublicUser));
 }
 
+export async function listNames(req, res) {
+  const users = await User.aggregate([
+    { $match: { active: true } },
+    { $sort: { name: 1 } },
+    { $project: { name: 1, hasAvatar: { $ne: [{ $ifNull: ['$avatar', null] }, null] } } },
+  ]).collation(NAME_COLLATION);
+  res.json(users.map(u => ({ id: String(u._id), name: u.name, hasAvatar: u.hasAvatar })));
+}
+
 export async function create(req, res) {
+  if (req.user && req.user.role !== ROLES.ADMIN) throw new HttpError(403, 'Solo un administrador puede crear usuarios');
   const name = validName(req.body?.name);
   const role = validRole(req.body?.role ?? ROLES.USER);
   if (role !== ROLES.USER && req.user?.role !== ROLES.ADMIN) {
@@ -38,8 +48,8 @@ export async function create(req, res) {
 }
 
 // avatar: a data URL, or null to remove the picture
-export async function updateMe(req, res) {
-  const { name, avatar } = req.body ?? {};
+async function updateProfile(id, body, res) {
+  const { name, avatar } = body ?? {};
   const changes = {};
 
   if (name !== undefined) changes.name = validName(name);
@@ -52,12 +62,22 @@ export async function updateMe(req, res) {
   if (!Object.keys(changes).length) throw new HttpError(400, 'No hay cambios');
 
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, changes, { returnDocument: 'after', runValidators: true }).lean();
+    const user = await User.findOneAndUpdate({ _id: id, active: true }, changes, { returnDocument: 'after', runValidators: true }).lean();
+    if (!user) throw new HttpError(404, 'Usuario no encontrado');
     res.json(toPublicUser(user));
   } catch (err) {
     if (err.code === 11000) throw new HttpError(409, DUPLICATE_NAME);
     throw err;
   }
+}
+
+export async function updateMe(req, res) {
+  await updateProfile(req.user._id, req.body, res);
+}
+
+export async function update(req, res) {
+  if (!mongoose.isValidObjectId(req.params.id)) throw new HttpError(400, 'Invalid id');
+  await updateProfile(req.params.id, req.body, res);
 }
 
 // An admin can change any role, including their own, but one admin must always remain

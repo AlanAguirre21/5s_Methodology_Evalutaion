@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { Pencil, UserPlus } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import StatusMessage from '../../components/StatusMessage.jsx';
 import Button from '../../components/Button.jsx';
 import ConfirmModal from '../../components/ui/ConfirmModal.jsx';
+import UserProfileModal from '../../components/ui/UserProfileModal.jsx';
 import UserAvatar from '../../components/profile/UserAvatar.jsx';
 import { Input, Label, Select } from '../../components/Input.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -89,6 +90,7 @@ export default function UsersPage() {
   const [error, setError]   = useState(null);
   const [busyId, setBusyId] = useState(null);   
   const [confirmRole, setConfirmRole] = useState(null);   
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -123,12 +125,13 @@ export default function UsersPage() {
     }
   }
 
+  const editing = users?.find(u => u.id === editingId) ?? null;
   const admins = users?.filter(u => u.role === ROLES.ADMIN).length ?? 0;
 
   return (
     <PageContainer size="lg">
       <h1 className="text-2xl font-semibold text-text">Usuarios</h1>
-      <p className="mt-1 text-sm text-text-muted">Agrega usuarios y define quién es administrador.</p>
+      <p className="mt-1 text-sm text-text-muted">Agrega usuarios, edita su perfil y define quién es administrador.</p>
 
       <div className="mt-6 space-y-4">
         <NewUserForm onCreated={created => setUsers(list => [...(list ?? []), created].sort(byName))} />
@@ -139,12 +142,13 @@ export default function UsersPage() {
         {users?.length > 0 && (
           <>
             <div className={`overflow-x-auto ${PANEL}`}>
-              <table className="w-full min-w-[520px] text-left text-sm">
+              <table className="w-full min-w-[620px] text-left text-sm">
                 <thead className="border-b border-border bg-white/60 text-xs text-text-muted">
                   <tr>
                     <th className="px-4 py-3 font-medium">Usuario</th>
                     <th className="px-4 py-3 font-medium">Registrado</th>
                     <th className="px-4 py-3 font-medium">Rol</th>
+                    <th className="px-4 py-3"><span className="sr-only">Perfil</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -172,6 +176,11 @@ export default function UsersPage() {
                           {Object.values(ROLES).map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                         </Select>
                       </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <Button size="sm" onClick={() => setEditingId(u.id)} aria-label={`Ver perfil de ${u.name}`}>
+                          <Pencil size={14} /> Perfil
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -183,6 +192,12 @@ export default function UsersPage() {
           </>
         )}
       </div>
+
+      <UserProfileModal
+        user={editing}
+        onSaved={updated => setUsers(list => list.map(u => (u.id === updated.id ? updated : u)).sort(byName))}
+        onClose={() => setEditingId(null)}
+      />
 
       <ConfirmModal
         open={confirmRole !== null}

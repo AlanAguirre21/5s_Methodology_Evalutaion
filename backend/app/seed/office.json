@@ -2,7 +2,7 @@
   "key": "oficina", "version": 1, "title": "Evaluación 5S",
   "sections": [
     {
-      "key": "clean_order01",
+      "key": "office_area",
       "name": "Limpieza y Orden 'área de oficina'",
       "weight": 1,
       "questions": [
@@ -12,7 +12,7 @@
       ]
     },
     {
-      "key": "clean_order02",
+      "key": "conference_area",
       "name": "Limpieza y Orden 'área de oficinas de conferencia'",
       "weight": 1,
       "questions": [
@@ -22,7 +22,7 @@
       ]
     },
     {
-      "key": "clean_order03",
+      "key": "kitchen_area",
       "name": "Limpieza y Orden 'área de cocina'",
       "weight": 1,
       "questions": [
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "key": "clean_order04",
+      "key": "hallway_area",
       "name": "Limpieza y Orden 'área de corredores'",
       "weight": 1,
       "questions": [

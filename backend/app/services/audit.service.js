@@ -3,8 +3,8 @@ import Questionnaire from '../models/Questionnaire.js';
 import Audit from '../models/Audit.js';
 import CatalogEntry from '../models/CatalogEntry.js';
 import HttpError from '../utils/HttpError.js';
-import User from '../models/User.js';
-import { HEADER_FIELDS, PHOTO_REQUIRED } from '../constants/headerFields.js';
+import User, { NAME_COLLATION } from '../models/User.js';
+import { HEADER_FIELDS, CATALOG_FIELDS, PHOTO_REQUIRED } from '../constants/headerFields.js';
 import { computeResult } from '../services/evaluation.service.js';
 import { ROLES } from '../constants/roles.js';
 
@@ -81,11 +81,23 @@ export async function start({ questionnaireKey, ...body }, user) {
 
   const fields = Object.fromEntries(names.map(n => [n, requireText(body[n], n)]));
 
-  const registered = await Promise.all(names.map(n =>
+  const catalogNames = CATALOG_FIELDS[questionnaireKey];
+  const registered = await Promise.all(catalogNames.map(n =>
     CatalogEntry.exists({ questionnaireKey, field: n, value: fields[n] })
   ));
-  const missing = names.filter((n, i) => !registered[i]);
+  const missing = catalogNames.filter((n, i) => !registered[i]);
   if (missing.length) throw new HttpError(400, `Not registered: ${missing.join(', ')}`);
+
+  const person = await User.findOne({ name: fields.evaluatedPerson, active: true })
+    .collation(NAME_COLLATION)
+    .select('name')
+    .lean();
+  if (!person) throw new HttpError(400, 'La persona a evaluar no es un usuario registrado');
+  fields.evaluatedPerson = person.name;
+
+  if (PHOTO_REQUIRED.includes(questionnaireKey) && !(await User.exists({ _id: person._id, avatar: { $ne: null } }))) {
+    throw new HttpError(400, 'La persona a evaluar necesita una foto de perfil');
+  }
 
   if (PHOTO_REQUIRED.includes(questionnaireKey) && !(await User.exists({ _id: user._id, avatar: { $ne: null } }))) {
     throw new HttpError(400, 'Para esta evaluación necesitas una foto en tu perfil');
@@ -94,7 +106,7 @@ export async function start({ questionnaireKey, ...body }, user) {
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
 
-  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: user._id, evaluatedPerson: user.name, ...fields });
+  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: user._id, supervisor: user.name, ...fields });
   return buildState(audit, questionnaire);
 }
 

@@ -26,10 +26,10 @@ export default function ResultPage() {
     const details = [
         ['Centro de coste', state.costCenter],
         ['Área', state.area],
-        ['Supervisor', state.supervisor],
         ['Área/Departamento', state.department],
         ['Taller', state.workshop],
         ['Persona evaluada', state.evaluatedPerson],
+        ['Supervisor', state.supervisor],
     ].filter(([, value]) => value);
 
   return (

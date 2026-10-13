@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 import CatalogEntry from '../models/CatalogEntry.js';
 import HttpError from '../utils/HttpError.js';
-import { HEADER_FIELDS } from '../constants/headerFields.js';
+import { CATALOG_FIELDS } from '../constants/headerFields.js';
 
 function fieldsOf(questionnaireKey) {
-  const fields = HEADER_FIELDS[questionnaireKey];
+  const fields = CATALOG_FIELDS[questionnaireKey];
   if (!fields) throw new HttpError(404, 'Questionnaire not found');
   return fields;
 }
@@ -13,7 +13,7 @@ export async function list(req, res) {
   const { questionnaireKey } = req.query;
   const fields = fieldsOf(questionnaireKey);
 
-  const entries = await CatalogEntry.find({ questionnaireKey })
+  const entries = await CatalogEntry.find({ questionnaireKey, field: { $in: fields } })
     .collation({ locale: 'es', numericOrdering: true })
     .sort({ value: 1 })
     .select('field value')

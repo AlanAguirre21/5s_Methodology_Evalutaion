@@ -24,7 +24,7 @@ async function toAvatarDataUrl(file) {
   return canvas.toDataURL('image/jpeg', 0.85);
 }
 
-export default function AvatarEditor({ user, onSaved }) {
+export default function AvatarEditor({ user, onSaved, update = updateMe }) {
   const inputRef = useRef(null);
   const [busy, setBusy]   = useState(false);
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ export default function AvatarEditor({ user, onSaved }) {
     setBusy(true);
     setError(null);
     try {
-      onSaved(await updateMe({ avatar }));
+      onSaved(await update({ avatar }));
     } catch (err) {
       setError(err.message);
     } finally {

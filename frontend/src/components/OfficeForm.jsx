@@ -4,7 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
 import CatalogSelect from './CatalogSelect.jsx';
-import EvaluatedPerson from './EvaluatedPerson.jsx';
+import EvaluatedPersonSelect from './EvaluatedPersonSelect.jsx';
+import SupervisingPerson from './SupervisingPerson.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import Button from './Button.jsx';
 import { Label } from './Input.jsx';
@@ -20,14 +21,15 @@ function Field({ label, htmlFor, children }) {
 }
 
 export default function OfficeForm({ option, catalog, onSubmit, submitting, error }) {
-  const [departamento, setDepartamento] = useState('');
-  const [taller, setTaller]             = useState('');
-  const [supervisor, setSupervisor]     = useState('');
+  const [departamento, setDepartamento]       = useState('');
+  const [taller, setTaller]                   = useState('');
+  const [evaluatedPerson, setEvaluatedPerson] = useState('');
+  const [evaluatedHasPhoto, setEvaluatedHasPhoto] = useState(false);
 
   const { user } = useAuth();
 
   const { title, Icon } = option;
-  const isValid = Boolean(user.avatar) && [departamento, taller, supervisor].every(v => v.trim() !== '');
+  const isValid = Boolean(user.avatar) && evaluatedHasPhoto && [departamento, taller, evaluatedPerson].every(v => v.trim() !== '');
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -35,7 +37,7 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
     onSubmit({
       department: departamento.trim(),
       workshop: taller.trim(),
-      supervisor: supervisor.trim(),
+      evaluatedPerson: evaluatedPerson.trim(),
     });
   }
 
@@ -67,8 +69,6 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
           />
         </Field>
 
-        <EvaluatedPerson photoRequired />
-
         <Field label="Taller" htmlFor="taller">
           <CatalogSelect
             id="taller"
@@ -80,16 +80,16 @@ export default function OfficeForm({ option, catalog, onSubmit, submitting, erro
           />
         </Field>
 
-        <Field label="Supervisor" htmlFor="supervisor">
-          <CatalogSelect
-            id="supervisor"
-            value={supervisor}
-            onChange={setSupervisor}
-            entries={catalog?.supervisor ?? null}
-            placeholder="Selecciona supervisor"
-            tab="oficina"
+        <Field label="Persona a evaluar" htmlFor="evaluatedPerson">
+          <EvaluatedPersonSelect
+            id="evaluatedPerson"
+            value={evaluatedPerson}
+            onChange={(name, person) => { setEvaluatedPerson(name); setEvaluatedHasPhoto(Boolean(person?.hasAvatar)); }}
+            photoRequired
           />
         </Field>
+
+        <SupervisingPerson photoRequired />
 
         {error && <StatusMessage error={error} />}
 
