@@ -63,18 +63,18 @@ export async function audits(req, res) {
   const done = a => a.status === 'completed';
 
   const columns = [
-    ['Fecha de inicio', a => isoDate(a.createdAt)],
-    ['Fecha de finalización', a => isoDate(a.completedAt)],
+    ['Inicio', a => isoDate(a.createdAt)],
+    ['Fin', a => isoDate(a.completedAt)],
     ...HEADER_FIELDS[questionnaireKey].map(field => [FIELD_LABELS[field], a => a[field]]),
     ['Supervisor', a => a.supervisor],
     ['Estado', a => (done(a) ? 'Completada' : 'En curso')],
     ['Puntos', a => a.score],
-    ['Total de preguntas', a => a.total],
+    ['Preguntas', a => a.total],
     ['Calificación', a => (done(a) ? Math.round((a.score / a.total) * 100) : null)],
     ['Resultado', a => a.result],
     ...sections.flatMap(s => [
-      [`${s.name} (puntos)`, a => sectionScore(a, s.key)?.score],
-      [`${s.name} (máximo)`, a => sectionScore(a, s.key)?.max],
+      [`${s.key} (puntos)`, a => sectionScore(a, s.key)?.score],
+      [`${s.key} (máximo)`, a => sectionScore(a, s.key)?.max],
     ]),
   ];
   const headers = columns.map(([header]) => header);

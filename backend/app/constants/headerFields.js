@@ -11,8 +11,8 @@ export const CATALOG_FIELDS = Object.fromEntries(
 export const FIELD_LABELS = {
   costCenter:      'Centro de coste',
   area:            'Área',
-  evaluatedPerson: 'Persona evaluada',
-  department:      'Área/Departamento',
+  evaluatedPerson: 'Persona',
+  department:      'Área',
   workshop:        'Taller',
 };
 
