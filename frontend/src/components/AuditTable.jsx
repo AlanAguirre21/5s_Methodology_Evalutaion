@@ -5,6 +5,8 @@ import Button from './Button.jsx';
 import UserAvatar from './profile/UserAvatar.jsx';
 import PersonModal from './ui/PersonModal.jsx';
 import { HEADER_FIELDS } from '../constants/questionnaires.js';
+import { useAuth } from '../hooks/useAuth.js';
+import { ROLES } from '../constants/roles.js';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
 
 export const AUDIT_COLUMNS = Object.fromEntries(
@@ -32,6 +34,7 @@ export default function AuditTable({ questionnaireKey, audits, users = [] }) {
   const photoColumn = PHOTO_COLUMN[questionnaireKey];
   const userOf = a => users.find(u => u.id === a.auditor) ?? { name: a.supervisor || '?' };
   const [person, setPerson] = useState(null);
+  const canEvaluate = useAuth().user.role === ROLES.ADMIN;
 
   return (
     <>
@@ -76,7 +79,7 @@ export default function AuditTable({ questionnaireKey, audits, users = [] }) {
                 <td className="whitespace-nowrap px-4 py-3"><StatusBadge audit={a} /></td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-3 whitespace-nowrap">
-                    {!done && (
+                    {!done && canEvaluate && (
                       <Button as={Link} to={`/audits/${a.auditId}`} variant="success" size="sm">
                         Continuar
                       </Button>

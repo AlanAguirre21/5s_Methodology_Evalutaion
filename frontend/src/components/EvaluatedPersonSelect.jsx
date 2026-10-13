@@ -4,15 +4,11 @@ import { Camera, UserPlus } from 'lucide-react';
 import { Select } from './Input.jsx';
 import Button from './Button.jsx';
 import UserProfileModal from './ui/UserProfileModal.jsx';
-import { useAuth } from '../hooks/useAuth.js';
 import { listUserNames } from '../api/users.js';
-import { ROLES } from '../constants/roles.js';
 
 const byName = (a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
 
 export default function EvaluatedPersonSelect({ id, value, onChange, photoRequired = false }) {
-  const { user } = useAuth();
-  const isAdmin = user.role === ROLES.ADMIN;
   const [users, setUsers] = useState(null);
   const [failed, setFailed] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -60,34 +56,20 @@ export default function EvaluatedPersonSelect({ id, value, onChange, photoRequir
       {missingPhoto && (
         <div role="alert" className="glass mt-2 rounded-control border border-warning/25 bg-warning/15 p-3 text-sm text-text">
           <p>Para la evaluación de oficina, <strong>{selected.name}</strong> necesita una foto de perfil.</p>
-          {isAdmin ? (
-            <Button size="sm" className="mt-2" onClick={() => setEditing({ id: selected.id, name: selected.name, avatar: null })}>
-              <Camera size={14} /> Agregar su foto
-            </Button>
-          ) : (
-            <p className="mt-1 text-text-muted">Pide a un administrador que se la agregue.</p>
-          )}
+          <Button size="sm" className="mt-2" onClick={() => setEditing({ id: selected.id, name: selected.name, avatar: null })}>
+            <Camera size={14} /> Agregar su foto
+          </Button>
         </div>
       )}
 
       <p className="mt-1 text-xs text-text-muted">
         ¿No encuentras a la persona?{' '}
-        {isAdmin ? (
-          <Link to="/usuarios" className="inline-flex items-center gap-1 font-medium text-accent hover:underline">
-            <UserPlus size={14} /> Agregar un usuario nuevo
-          </Link>
-        ) : (
-          'Pide a un administrador que la registre como usuario.'
-        )}
+        <Link to="/usuarios" className="inline-flex items-center gap-1 font-medium text-accent hover:underline">
+          <UserPlus size={14} /> Agregar un usuario nuevo
+        </Link>
       </p>
 
-      {isAdmin && (
-        <UserProfileModal
-          user={editing}
-          onSaved={handleSaved}
-          onClose={() => setEditing(null)}
-        />
-      )}
+      <UserProfileModal user={editing} onSaved={handleSaved} onClose={() => setEditing(null)} />
     </>
   );
 }

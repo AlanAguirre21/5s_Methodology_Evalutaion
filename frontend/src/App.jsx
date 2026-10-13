@@ -29,15 +29,15 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/perfil" element={<ProfilePage />} />
               <Route path="/historial" element={<ProfileRecordPage />} />
+              <Route path="/registro/:auditId" element={<AuditDetailPage />} />
               <Route element={<RequireRole roles={[ROLES.ADMIN]} />}>
                 <Route path="/usuarios" element={<UsersPage />} />
                 <Route path="/registro" element={<RecordPage />} />
+                <Route path="/personas" element={<PeoplePage />} />
+                <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
+                <Route path="/audits/:auditId" element={<ChatPage />} />
+                <Route path="/audits/:auditId/result" element={<ResultPage />} />
               </Route>
-              <Route path="/registro/:auditId" element={<AuditDetailPage />} />
-              <Route path="/personas" element={<PeoplePage />} />
-              <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
-              <Route path="/audits/:auditId" element={<ChatPage />} />
-              <Route path="/audits/:auditId/result" element={<ResultPage />} />
             </Route>
           </Route>
         </Routes>

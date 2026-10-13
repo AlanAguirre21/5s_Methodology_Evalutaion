@@ -8,7 +8,7 @@ import { PANEL } from '../../constants/styles.js';
 
 const ROLE_DESCRIPTIONS = {
   admin: 'Puede realizar evaluaciones, consultar el registro de todas y gestionar los usuarios y sus roles.',
-  user:  'Puede realizar evaluaciones y consultar su propio historial.',
+  user:  'Puede consultar los resultados de sus propias evaluaciones.',
 };
 
 export default function RoleCard({ user, onSaved }) {

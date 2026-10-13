@@ -5,10 +5,10 @@ import { ROLES } from '../constants/roles.js';
 
 const router = express.Router();
 
-router.post('/', ctrl.start);              // { questionnaireKey, evaluatedPerson, + piso: costCenter, area | oficina: department, workshop }
+router.post('/', requireRole(ROLES.ADMIN), ctrl.start);              // { questionnaireKey, evaluatedPerson, + piso: costCenter, area | oficina: department, workshop }
 router.get('/', requireRole(ROLES.ADMIN), ctrl.list);   // ?questionnaireKey=piso|oficina
-router.get('/mine', ctrl.listMine);        // ?from=&to= (ISO dates) — audits made by the logged-in user, both types
+router.get('/mine', ctrl.listMine);        // ?from=&to= (ISO dates) — audits an admin made, or where an operator was evaluated
 router.get('/:id', ctrl.getState);
-router.post('/:id/answers', ctrl.answer);  // { index, answer }
+router.post('/:id/answers', requireRole(ROLES.ADMIN), ctrl.answer);  // { index, answer }
 
 export default router;

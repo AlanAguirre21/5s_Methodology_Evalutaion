@@ -54,13 +54,19 @@ function buildState(audit, questionnaire) {
   return { ...base, status: 'in_progress', index, section: q.section, question: { id: q.id, text: q.text } };
 }
 
+const evaluatedFilter = user => ({ $or: [{ evaluated: user._id }, { evaluated: null, evaluatedPerson: user.name }] });
+
+function isEvaluated(audit, user) {
+  return audit.evaluated ? audit.evaluated.equals(user._id) : audit.evaluatedPerson === user.name;
+}
+
 async function loadAudit(id, user) {
   if (!mongoose.isValidObjectId(id)) throw new HttpError(400, 'Invalid audit id');
 
   const audit = await Audit.findById(id);
   if (!audit) throw new HttpError(404, 'Audit not found');
-  if (user.role !== ROLES.ADMIN && !audit.auditor?.equals(user._id)) {
-    throw new HttpError(403, 'Solo puedes consultar las evaluaciones que realizaste');
+  if (user.role !== ROLES.ADMIN && !isEvaluated(audit, user)) {
+    throw new HttpError(403, 'Solo puedes consultar tus propias evaluaciones');
   }
 
   const questionnaire = await Questionnaire.findById(audit.questionnaire).lean();
@@ -106,7 +112,7 @@ export async function start({ questionnaireKey, ...body }, user) {
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
 
-  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: user._id, supervisor: user.name, ...fields });
+  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: user._id, evaluated: person._id, supervisor: user.name, ...fields });
   return buildState(audit, questionnaire);
 }
 
@@ -188,8 +194,9 @@ function parseDate(value, name) {
   return date;
 }
 
-// Audits made by one user, of every questionnaire type, started between "from" and "to" (default: the last year)
-export async function listByAuditor(auditorId, from, to) {
+// Audits of every questionnaire type started between "from" and "to" (default: the last year):
+// the ones an admin made, or the completed ones where an operator was evaluated
+export async function listMine(user, from, to) {
   const end = to === undefined ? new Date() : parseDate(to, 'to');
   const start = from === undefined
     ? new Date(new Date(end).setFullYear(end.getFullYear() - 1))
@@ -198,7 +205,9 @@ export async function listByAuditor(auditorId, from, to) {
 
   const info = await questionnaireInfo({});
 
-  const audits = await Audit.find({ auditor: auditorId, createdAt: { $gte: start, $lte: end } })
+  const mine = user.role === ROLES.ADMIN ? { auditor: user._id } : { status: 'completed', ...evaluatedFilter(user) };
+
+  const audits = await Audit.find({ ...mine, createdAt: { $gte: start, $lte: end } })
     .sort({ createdAt: -1 })
     .limit(1000)
     .lean();

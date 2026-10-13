@@ -15,6 +15,7 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const isHome = pathname === '/';
+  const isAdmin = user?.role === ROLES.ADMIN;
 
   function handleLogout() {
     logout();
@@ -36,12 +37,13 @@ export default function AppHeader() {
                 Inicio
               </NavLink>
             )}
-            
-            <NavLink to="/personas" className={linkClass}>
-              <span className="hidden sm:inline">Elementos de auditoría</span>
-              <span className="sm:hidden">Elementos</span>
-            </NavLink>
-            {user.role === ROLES.ADMIN && (
+                        {isAdmin && (
+              <NavLink to="/personas" className={linkClass}>
+                <span className="hidden sm:inline">Elementos de auditoría</span>
+                <span className="sm:hidden">Elementos</span>
+              </NavLink>
+            )}
+            {isAdmin && (
               <NavLink to="/registro" className={linkClass}>
                 <span className="hidden sm:inline">Registro de evaluaciones</span>
                 <span className="sm:hidden">Registro</span>
@@ -51,7 +53,7 @@ export default function AppHeader() {
               <span className="hidden sm:inline">Historial de evaluaciones</span>
               <span className="sm:hidden">Historial</span>
             </NavLink>
-            {user.role === ROLES.ADMIN && (
+            {isAdmin && (
               <NavLink
                 to="/usuarios"
                 end

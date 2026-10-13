@@ -17,7 +17,7 @@ export async function list(req, res) {
 }
 
 export async function listMine(req, res) {
-  res.json(await auditService.listByAuditor(req.user._id, req.query.from, req.query.to));
+  res.json(await auditService.listMine(req.user, req.query.from, req.query.to));
 }
 
 export async function getState(req, res)  {

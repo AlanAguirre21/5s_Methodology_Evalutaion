@@ -148,22 +148,22 @@ Base: `http://localhost:3000/api`
 | POST   | `/auth/login` | Identificarse con `{ name }`; devuelve `{ token, user }` |
 | GET    | `/auth/me` | Usuario de la sesión actual |
 | GET    | `/users` | Lista de usuarios (solo administrador) |
-| GET    | `/users/names` | `[{ id, name, hasAvatar }]` de los usuarios, para elegir a la persona a evaluar |
+| GET    | `/users/names` | `[{ id, name, hasAvatar }]` de los usuarios, para elegir a la persona a evaluar (solo administrador) |
 | POST   | `/users` | Crear usuario `{ name, role? }`; con sesión, solo un administrador puede crear usuarios; solo un administrador puede asignar `role: "admin"` |
 | PATCH  | `/users/me` | Editar el perfil propio `{ name?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
 | PATCH  | `/users/:id` | Editar el perfil de cualquier usuario `{ name?, avatar? }` (solo administrador) |
 | PATCH  | `/users/:id/role` | Cambiar el rol `{ role }` (solo administrador; siempre debe quedar al menos uno) |
 | GET    | `/questionnaires` | Tipos de cuestionario disponibles |
-| GET    | `/catalog?questionnaireKey=piso\|oficina` | Valores registrados por campo |
+| GET    | `/catalog?questionnaireKey=piso\|oficina` | Valores registrados por campo (solo administrador, como todo `/catalog`) |
 | POST   | `/catalog` | Registrar un valor `{ questionnaireKey, field, value }` |
 | DELETE | `/catalog/:id` | Eliminar un valor (las evaluaciones anteriores no cambian) |
 | GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones de todos los usuarios, más recientes primero (solo administrador) |
 | GET    | `/export/key` | Clave de solo lectura para el enlace de Power BI (solo administrador) |
 | GET    | `/export/:key/piso.csv` · `/export/:key/oficina.csv` | Evaluaciones del tipo con los puntos por sección, para Power BI. No usa sesión: se autoriza con la clave del enlace. Devuelve CSV; con `.json` o `.html` al final devuelve JSON o una página con la tabla |
-| GET    | `/audits/mine?from=&to=` | Evaluaciones realizadas por el usuario de la sesión en el periodo (por defecto, el último año) |
-| POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo |
-| GET    | `/audits/:id` | Estado completo de una evaluación (quien la realizó o un administrador) |
-| POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` |
+| GET    | `/audits/mine?from=&to=` | Evaluaciones del periodo (por defecto, el último año): las que realizó un administrador, o las completadas en las que un operador fue la persona evaluada |
+| POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo (solo administrador) |
+| GET    | `/audits/:id` | Estado completo de una evaluación (un administrador o la persona evaluada) |
+| POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` (solo administrador) |
 
 Salvo `/auth/login` y `POST /users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
 El inicio de sesión es solo **identificación** (solo el nombre, sin contraseña): el token es el id del usuario.

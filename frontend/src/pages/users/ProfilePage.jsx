@@ -5,6 +5,7 @@ import AvatarEditor from '../../components/profile/AvatarEditor.jsx';
 import PersonalInfoCard from '../../components/profile/PersonalInfoCard.jsx';
 import RoleCard from '../../components/profile/RoleCard.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
+import { ROLES } from '../../constants/roles.js';
 import { PANEL } from '../../constants/styles.js';
 
 export default function ProfilePage() {
@@ -31,7 +32,7 @@ export default function ProfilePage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-semibold text-text">Historial de evaluaciones</span>
-              <span className="block text-sm text-text-muted">Las evaluaciones que has realizado y cómo han evolucionado.</span>
+              <span className="block text-sm text-text-muted">{user.role === ROLES.ADMIN ? 'Las evaluaciones que has realizado y cómo han evolucionado.' : 'Los resultados de tus evaluaciones y cómo han evolucionado.'}</span>
             </span>
             <ChevronRight size={18} className="shrink-0 text-text-muted" />
           </Link>

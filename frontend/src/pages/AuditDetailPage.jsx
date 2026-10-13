@@ -93,9 +93,11 @@ export default function AuditDetailPage() {
               Evaluación en curso: {state.history.length} de {state.total} preguntas respondidas
               ({yesCount} {yesCount === 1 ? 'punto' : 'puntos'} hasta ahora). La calificación se calcula al terminar.
             </p>
-            <Button as={Link} to={`/audits/${auditId}`} variant="success">
-              Continuar <ChevronRight size={16} />
-            </Button>
+            {isAdmin && (
+              <Button as={Link} to={`/audits/${auditId}`} variant="success">
+                Continuar <ChevronRight size={16} />
+              </Button>
+            )}
           </div>
         )}
 

@@ -10,7 +10,8 @@ import catalogRoutes from './routes/catalog.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import exportRoutes from './routes/export.routes.js';
-import { identify, requireAuth } from './middleware/auth.js';
+import { identify, requireAuth, requireRole } from './middleware/auth.js';
+import { ROLES } from './constants/roles.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -25,7 +26,7 @@ app.use('/api/export', exportRoutes);
 app.use('/api/areas', requireAuth, areaRoutes);
 app.use('/api/audits', requireAuth, auditRoutes);
 app.use('/api/questionnaires', requireAuth, questionnaireRoutes);
-app.use('/api/catalog', requireAuth, catalogRoutes);
+app.use('/api/catalog', requireRole(ROLES.ADMIN), catalogRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
