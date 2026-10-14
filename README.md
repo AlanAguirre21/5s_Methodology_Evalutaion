@@ -18,7 +18,7 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
 - **Registro de evaluaciones** (`/registro`, solo administrador): pestañas Piso / Oficina, filtros por cada campo, 10 / 25 / 50 / 100 / todas las filas por página.
 - **Detalle de cada evaluación:** calificación, puntos por sección y todas las preguntas con su respuesta y desviación.
 - **Perfil** (`/perfil`): nombre, foto y rol del usuario. El rol es de solo lectura; un administrador puede cambiar el suyo tras confirmar.
-- **Historial** (`/historial`): evaluaciones realizadas por el usuario en un periodo (un año por defecto), con gráfica de calificaciones.
+- **Historial** (`/historial`): evaluaciones completadas en las que el usuario fue la persona evaluada, en un periodo (un año por defecto), con gráfica de calificaciones.
 - **Usuarios** (`/usuarios`, solo administrador): lista de usuarios, cambio de rol y alta de usuarios.
 - **Elementos de auditoría** (`/personas`): catálogo de valores por tipo y campo, con búsqueda y paginación. **Solo los valores registrados aquí aparecen en los formularios**, y el backend rechaza cualquier otro.
 
@@ -160,7 +160,7 @@ Base: `http://localhost:3000/api`
 | GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones de todos los usuarios, más recientes primero (solo administrador) |
 | GET    | `/export/key` | Clave de solo lectura para el enlace de Power BI (solo administrador) |
 | GET    | `/export/:key/piso.csv` · `/export/:key/oficina.csv` | Evaluaciones del tipo con los puntos por sección, para Power BI. No usa sesión: se autoriza con la clave del enlace. Devuelve CSV; con `.json` o `.html` al final devuelve JSON o una página con la tabla |
-| GET    | `/audits/mine?from=&to=` | Evaluaciones del periodo (por defecto, el último año): las que realizó un administrador, o las completadas en las que un operador fue la persona evaluada |
+| GET    | `/audits/mine?from=&to=` | Evaluaciones del periodo (por defecto, el último año): las completadas en las que el usuario fue la persona evaluada |
 | POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo (solo administrador) |
 | GET    | `/audits/:id` | Estado completo de una evaluación (un administrador o la persona evaluada) |
 | POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` (solo administrador) |

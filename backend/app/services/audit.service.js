@@ -194,8 +194,8 @@ function parseDate(value, name) {
   return date;
 }
 
-// Audits of every questionnaire type started between "from" and "to" (default: the last year):
-// the ones an admin made, or the completed ones where an operator was evaluated
+// Completed audits of every questionnaire type started between "from" and "to" (default: the last year)
+// where the user was the evaluated person
 export async function listMine(user, from, to) {
   const end = to === undefined ? new Date() : parseDate(to, 'to');
   const start = from === undefined
@@ -205,9 +205,7 @@ export async function listMine(user, from, to) {
 
   const info = await questionnaireInfo({});
 
-  const mine = user.role === ROLES.ADMIN ? { auditor: user._id } : { status: 'completed', ...evaluatedFilter(user) };
-
-  const audits = await Audit.find({ ...mine, createdAt: { $gte: start, $lte: end } })
+  const audits = await Audit.find({ status: 'completed', ...evaluatedFilter(user), createdAt: { $gte: start, $lte: end } })
     .sort({ createdAt: -1 })
     .limit(1000)
     .lean();

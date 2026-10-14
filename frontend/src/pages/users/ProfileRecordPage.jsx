@@ -10,7 +10,6 @@ import { Input, Select } from '../../components/Input.jsx';
 import { listMyAudits } from '../../api/audits.js';
 import { useAuth } from '../../hooks/useAuth.js';
 import { QUESTIONNAIRE_OPTIONS } from '../../constants/questionnaires.js';
-import { ROLES } from '../../constants/roles.js';
 import { PANEL, SEGMENTED, TILE, ACCENT_THEME } from '../../constants/styles.js';
 
 const PERIODS = [
@@ -49,7 +48,6 @@ function Stat({ label, value, hint }) {
 
 export default function ProfileRecordPage() {
   const { user } = useAuth();
-  const isAdmin = user.role === ROLES.ADMIN;
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const tab = QUESTIONNAIRE_OPTIONS.some(o => o.key === tabParam) ? tabParam : QUESTIONNAIRE_OPTIONS[0].key;
@@ -109,7 +107,7 @@ export default function ProfileRecordPage() {
   return (
     <PageContainer size="xl">
       <h1 className="text-2xl font-semibold text-text">Historial de evaluaciones</h1>
-      <p className="mt-1 text-sm text-text-muted">{isAdmin ? 'Las evaluaciones que realizaste en el periodo seleccionado.' : 'Los resultados de las evaluaciones que te hicieron en el periodo seleccionado.'}</p>
+      <p className="mt-1 text-sm text-text-muted">Los resultados de las evaluaciones que te hicieron en el periodo seleccionado.</p>
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
         <div role="tablist" className={SEGMENTED}>
@@ -179,7 +177,7 @@ export default function ProfileRecordPage() {
 
             {ofTab.length > 0
               ? <AuditTable questionnaireKey={tab} audits={rows} users={[user]} />
-              : <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>{isAdmin ? 'No realizaste evaluaciones de este tipo en el periodo.' : 'No tienes evaluaciones de este tipo en el periodo.'}</p>}
+              : <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>No tienes evaluaciones de este tipo en el periodo.</p>}
 
             {ofTab.length > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">
