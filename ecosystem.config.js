@@ -1,4 +1,4 @@
-const FRONTEND_PORT = 5173;
+const FRONTEND_PORT = 5175;
 
 module.exports = {
   apps: [
