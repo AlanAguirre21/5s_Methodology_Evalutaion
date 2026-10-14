@@ -142,6 +142,7 @@ function toListItem(a, info) {
     department: a.department,
     workshop: a.workshop,
     evaluatedPerson: a.evaluatedPerson,
+    evaluated: a.evaluated ?? null,
     auditor: a.auditor ?? null,
   };
 }

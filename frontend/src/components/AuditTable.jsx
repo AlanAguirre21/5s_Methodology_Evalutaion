@@ -26,13 +26,14 @@ function StatusBadge({ audit }) {
   );
 }
 
-const PHOTO_COLUMN = { oficina: 'supervisor' };
+const PHOTO_COLUMN = { oficina: 'evaluatedPerson' };
 
 export default function AuditTable({ questionnaireKey, audits, users = [] }) {
   const columns = AUDIT_COLUMNS[questionnaireKey];
   const theme = ACCENT_THEME;
   const photoColumn = PHOTO_COLUMN[questionnaireKey];
-  const userOf = a => users.find(u => u.id === a.auditor) ?? { name: a.supervisor || '?' };
+  const userOf = a =>
+    users.find(u => (a.evaluated ? u.id === a.evaluated : u.name === a.evaluatedPerson)) ?? { name: a.evaluatedPerson || '?' };
   const [person, setPerson] = useState(null);
   const canEvaluate = useAuth().user.role === ROLES.ADMIN;
 

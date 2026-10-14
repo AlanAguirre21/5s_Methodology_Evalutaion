@@ -4,7 +4,10 @@ import { Camera, UserPlus } from 'lucide-react';
 import { Select } from './Input.jsx';
 import Button from './Button.jsx';
 import UserProfileModal from './ui/UserProfileModal.jsx';
-import { listUserNames } from '../api/users.js';
+import PersonModal from './ui/PersonModal.jsx';
+import UserAvatar from './profile/UserAvatar.jsx';
+import { listUserNames, listUsers } from '../api/users.js';
+import { TILE } from '../constants/styles.js';
 
 const byName = (a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
 
@@ -12,14 +15,18 @@ export default function EvaluatedPersonSelect({ id, value, onChange, photoRequir
   const [users, setUsers] = useState(null);
   const [failed, setFailed] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
 
   useEffect(() => {
     let active = true;
-    listUserNames()
+    const load = photoRequired
+      ? listUsers().then(items => items.map(u => ({ id: u.id, name: u.name, role: u.role, avatar: u.avatar, hasAvatar: Boolean(u.avatar) })))
+      : listUserNames();
+    load
       .then(items => { if (active) setUsers(items); })
       .catch(() => { if (active) { setUsers([]); setFailed(true); } });
     return () => { active = false; };
-  }, []);
+  }, [photoRequired]);
 
   const loading = users === null;
   const empty = users?.length === 0;
@@ -32,7 +39,7 @@ export default function EvaluatedPersonSelect({ id, value, onChange, photoRequir
   const missingPhoto = photoRequired && selected && !selected.hasAvatar;
 
   function handleSaved(updated) {
-    const entry = { id: updated.id, name: updated.name, hasAvatar: Boolean(updated.avatar) };
+    const entry = { id: updated.id, name: updated.name, role: updated.role, avatar: updated.avatar, hasAvatar: Boolean(updated.avatar) };
     setUsers(list => list.map(u => (u.id === entry.id ? entry : u)).sort(byName));
     setEditing(updated);
     onChange(entry.name, entry);
@@ -53,6 +60,16 @@ export default function EvaluatedPersonSelect({ id, value, onChange, photoRequir
         ))}
       </Select>
 
+      {photoRequired && selected?.hasAvatar && (
+        <div className={`mt-2 flex items-center gap-3 px-3 py-2 ${TILE}`}>
+          <UserAvatar user={selected} size={36} />
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-text">{selected.name}</span>
+          <button type="button" onClick={() => setViewing(selected)} className="shrink-0 text-xs font-medium text-accent hover:underline">
+            Ver su información
+          </button>
+        </div>
+      )}
+
       {missingPhoto && (
         <div role="alert" className="glass mt-2 rounded-control border border-warning/25 bg-warning/15 p-3 text-sm text-text">
           <p>Para la evaluación de oficina, <strong>{selected.name}</strong> necesita una foto de perfil.</p>
@@ -70,6 +87,7 @@ export default function EvaluatedPersonSelect({ id, value, onChange, photoRequir
       </p>
 
       <UserProfileModal user={editing} onSaved={handleSaved} onClose={() => setEditing(null)} />
+      <PersonModal user={viewing} onClose={() => setViewing(null)} />
     </>
   );
 }
