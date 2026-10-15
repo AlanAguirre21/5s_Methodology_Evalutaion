@@ -57,6 +57,7 @@ Las versiones exactas están en [requirements.txt](requirements.txt).
 │   │   └── hooks/              # useAudit (estado de una evaluación)
 │   ├── public/                 # Íconos
 │   └── package.json
+├── ecosystem.config.js         # Configuración de PM2 para el despliegue
 ├── requirements.txt
 └── README.md
 ```
@@ -80,8 +81,10 @@ Crear el archivo `backend/.env` (no se sube al repositorio):
 ```env
 MONGO_URI=mongodb://localhost:27017/5s_project
 PORT=3000
-FRONTEND_ORIGIN=http://localhost:5173
+CLIENT_ORIGIN=http://localhost:5173
 ```
+
+`PORT` es obligatorio: el backend no tiene puerto por defecto. `CLIENT_ORIGIN` es el origen del frontend permitido por CORS.
 
 Cargar los cuestionarios en la base de datos:
 
@@ -124,6 +127,24 @@ En desarrollo, Vite redirige las peticiones `/api` al backend (puerto 3000).
 | frontend | `npm run dev`   | Servidor de desarrollo |
 | frontend | `npm run build` | Compilación para producción (`frontend/dist`) |
 | frontend | `npm run lint`  | Revisión de código (oxlint) |
+
+## Despliegue (PM2)
+
+En el servidor, [ecosystem.config.js](ecosystem.config.js) levanta una sola aplicación de PM2 (`5s-evaluation-app`) que ejecuta el backend y `vite preview` (que sirve `frontend/dist`) juntos; si uno de los dos termina, se detiene el otro y PM2 reinicia la aplicación. `vite preview` escucha en todas las interfaces (`0.0.0.0`) y también redirige `/api` al backend.
+
+Requiere `bash` y PM2 instalados en el servidor.
+
+```bash
+# 1. Compilar el frontend
+cd frontend
+npm run build
+
+# 2. Iniciar desde la raíz del proyecto
+cd ..
+pm2 start ecosystem.config.js
+```
+
+Los puertos están en `backend/.env` (`PORT`) y en [frontend/vite.config.js](frontend/vite.config.js) (`server`, `preview` y el destino del proxy `/api`), que deben coincidir. Tras cambiar el frontend, volver a ejecutar `npm run build` y `pm2 restart 5s-evaluation-app`.
 
 ## Cálculo del resultado
 
