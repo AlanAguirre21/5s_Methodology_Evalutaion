@@ -1,20 +1,14 @@
-const FRONTEND_PORT = 5175;
+const BACKEND  = 'node app/app.js';
+const FRONTEND = 'node ../frontend/node_modules/vite/bin/vite.js preview ../frontend';
 
 module.exports = {
   apps: [
     {
-      name: '5s-backend',
+      name: '5s-evaluation-app',
       cwd: './backend',
-      script: 'app/app.js',
-      env: {
-        NODE_ENV: 'production',
-      },
-    },
-    {
-      name: '5s-frontend',
-      cwd: './frontend',
-      script: 'node_modules/vite/bin/vite.js',
-      args: `preview --host --port ${FRONTEND_PORT} --strictPort`,
+      script: 'bash',
+      interpreter: 'none',
+      args: ['-c', `trap 'kill $(jobs -p) 2>/dev/null' EXIT; ${BACKEND} & ${FRONTEND} & wait -n`],
       env: {
         NODE_ENV: 'production',
       },
