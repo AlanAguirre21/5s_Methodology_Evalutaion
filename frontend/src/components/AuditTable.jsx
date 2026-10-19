@@ -26,14 +26,17 @@ function StatusBadge({ audit }) {
   );
 }
 
-const PHOTO_COLUMN = { oficina: 'evaluatedPerson' };
+const PHOTO_COLUMN = { piso: 'evaluatedPerson', oficina: 'evaluatedPerson' };
 
 export default function AuditTable({ questionnaireKey, audits, users = [] }) {
   const columns = AUDIT_COLUMNS[questionnaireKey];
   const theme = ACCENT_THEME;
   const photoColumn = PHOTO_COLUMN[questionnaireKey];
+  // The evaluated person is the area manager: matched to their user by email, else by the user saved in the audit, else by name
   const userOf = a =>
-    users.find(u => (a.evaluated ? u.id === a.evaluated : u.name === a.evaluatedPerson)) ?? { name: a.evaluatedPerson || '?' };
+    (a.evaluatedEmail && users.find(u => u.email === a.evaluatedEmail))
+    ?? users.find(u => (a.evaluated ? u.id === a.evaluated : u.name === a.evaluatedPerson))
+    ?? { name: a.evaluatedPerson || '?' };
   const [person, setPerson] = useState(null);
   const canEvaluate = useAuth().user.role === ROLES.ADMIN;
 

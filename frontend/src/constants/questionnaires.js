@@ -22,7 +22,7 @@ export const getQuestionnaireOption = key =>
 const AREA_FIELDS = [
   { key: 'area',            label: 'Área' },
   { key: 'costCenter',      label: 'Centro de coste' },
-  { key: 'evaluatedPerson', label: 'Responsable' },
+  { key: 'evaluatedPerson', label: 'Persona evaluada' },
   { key: 'supervisor',      label: 'Supervisor' },
 ];
 

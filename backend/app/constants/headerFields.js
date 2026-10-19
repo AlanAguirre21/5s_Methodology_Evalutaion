@@ -9,5 +9,5 @@ export const HEADER_FIELDS = {
 export const FIELD_LABELS = {
   area:            'Área',
   costCenter:      'Centro de coste',
-  evaluatedPerson: 'Responsable',
+  evaluatedPerson: 'Persona evaluada',
 };

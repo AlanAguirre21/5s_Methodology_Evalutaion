@@ -123,7 +123,7 @@ export default function RecordPage() {
             Copiar enlace de {getQuestionnaireOption(tab).title} para Power BI
           </a>
         )}
-        {copied && <span role="status" className="text-text-muted">Copiado. En Power BI Desktop: Obtener datos → Web y pega el enlace.</span>}
+        {copied && <span role="status" className="text-text-muted">Copiado. En Power BI: Obtener datos → Web y pega el enlace.</span>}
         {exportError && <span role="alert" className="w-full text-danger">{exportError}</span>}
       </section>
 

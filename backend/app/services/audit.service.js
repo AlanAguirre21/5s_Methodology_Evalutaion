@@ -143,9 +143,24 @@ function toListItem(a, info) {
     department: a.department,
     workshop: a.workshop,
     evaluatedPerson: a.evaluatedPerson,
+    evaluatedEmail: a.evaluatedEmail ?? null,
     evaluated: a.evaluated ?? null,
     auditor: a.auditor ?? null,
   };
+}
+
+// The evaluated person shown in the record and the export is the current manager of the audit's area
+// (by reference, or by name in audits from before areas were registered); the name saved in the audit is the fallback.
+async function withAreaManagers(items, audits) {
+  const areas = await Area.find().select('name manager').lean();
+  const byId = new Map(areas.map(ar => [String(ar._id), ar]));
+  const byName = new Map(areas.map(ar => [ar.name.toLocaleLowerCase('es'), ar]));
+  const areaOf = a => (a.areaRef ? byId.get(String(a.areaRef)) : byName.get((a.area ?? a.department ?? '').toLocaleLowerCase('es')));
+
+  return items.map((item, i) => {
+    const manager = areaOf(audits[i])?.manager;
+    return manager ? { ...item, evaluatedPerson: manager.name, evaluatedEmail: manager.email } : item;
+  });
 }
 
 export async function list(questionnaireKey) {
@@ -159,7 +174,7 @@ export async function list(questionnaireKey) {
     .limit(500)
     .lean();
 
-  return audits.map(a => toListItem(a, info));
+  return withAreaManagers(audits.map(a => toListItem(a, info)), audits);
 }
 
 // Every audit of one type, with the points of each section, for the Power BI export
@@ -185,7 +200,7 @@ export async function exportData(questionnaireKey) {
 
   return {
     sections,
-    audits: audits.map(a => ({ ...toListItem(a, info), sectionScores: a.sectionScores })),
+    audits: await withAreaManagers(audits.map(a => ({ ...toListItem(a, info), sectionScores: a.sectionScores })), audits),
   };
 }
 
