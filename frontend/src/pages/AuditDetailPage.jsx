@@ -8,13 +8,27 @@ import { PANEL, TILE } from '../constants/styles.js';
 import Button from '../components/Button.jsx';
 import { getQuestionnaireOption, HEADER_FIELDS } from '../constants/questionnaires.js';
 import { useAuth } from '../hooks/useAuth.js';
+import { ratingOption } from '../constants/ratings.js';
 import { ROLES } from '../constants/roles.js';
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'long', timeStyle: 'short' });
 
 const toGrade = (score, max) => (max ? Math.round((score / max) * 100) : 0);
 
-function AnswerBadge({ answer }) {
+const RATING_BADGE = {
+  success: 'bg-success/10 text-success ring-success/25',
+  accent:  'bg-accent/10 text-accent ring-accent/25',
+  danger:  'bg-danger/10 text-danger ring-danger/25',
+};
+
+function AnswerBadge({ answer, points }) {
+  if (points !== null && points !== undefined) {
+    return (
+      <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${RATING_BADGE[ratingOption(points)?.color]}`}>
+        {points} {points === 1 ? 'punto' : 'puntos'}
+      </span>
+    );
+  }
   return answer ? (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success ring-1 ring-success/25">
       <Check size={14} /> Sí
@@ -47,7 +61,8 @@ export default function AuditDetailPage() {
     .filter(([, value]) => value);
 
   const sectionNames = new Map(state.history.map(h => [h.section.key, h.section.name]));
-  const yesCount = state.history.filter(h => h.answer).length;
+  const pointsSoFar = state.history.reduce((sum, h) => sum + (h.points ?? (h.answer ? 1 : 0)), 0);
+  const answeredCount = state.history.filter(h => h.type !== 'photo').length;
 
   let lastSection = null;
 
@@ -90,8 +105,8 @@ export default function AuditDetailPage() {
         ) : (
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 glass rounded-control border border-accent/30 bg-accent/10 p-4 text-sm text-accent">
             <p>
-              Evaluación en curso: {state.history.length} de {state.total} preguntas respondidas
-              ({yesCount} {yesCount === 1 ? 'punto' : 'puntos'} hasta ahora). La calificación se calcula al terminar.
+              Evaluación en curso: {answeredCount} de {state.questions} preguntas respondidas
+              ({pointsSoFar} {pointsSoFar === 1 ? 'punto' : 'puntos'} hasta ahora). La calificación se calcula al terminar.
             </p>
             {isAdmin && (
               <Button as={Link} to={`/audits/${auditId}`} variant="success">
@@ -158,13 +173,16 @@ export default function AuditDetailPage() {
                         <span className="mr-1.5 font-medium text-text-faint">{i + 1}.</span>
                         {h.question}
                       </p>
-                      {!h.answer && h.deviation && (
+                      {h.type === 'photo' && h.photo && (
+                        <img src={h.photo} alt={`Foto: ${h.section.name}`} className="mt-2 max-h-80 rounded-control border border-white/60" />
+                      )}
+                      {h.deviation && (
                         <p className="mt-2 rounded-control border border-danger/25 bg-danger/10 px-3 py-2 text-danger">
                           <span className="font-semibold">Desviación:</span> {h.deviation}
                         </p>
                       )}
                     </div>
-                    <AnswerBadge answer={h.answer} />
+                    {h.type !== 'photo' && <AnswerBadge answer={h.answer} points={h.points} />}
                   </div>
                 </li>
               );

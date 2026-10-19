@@ -25,6 +25,6 @@ export async function getState(req, res)  {
 }
 
 export async function answer(req, res) {
-  const { index, answer, deviation } = req.body;
-  res.json(await auditService.answer(req.params.id, index, answer, deviation, req.user));
+  const { index, answer, points, deviation, photo } = req.body;
+  res.json(await auditService.answer(req.params.id, index, { answer, points, deviation, photo }, req.user));
 }

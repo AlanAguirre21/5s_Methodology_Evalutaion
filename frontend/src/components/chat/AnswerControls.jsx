@@ -1,8 +1,24 @@
 import { CheckCircle2, SendHorizontal, XCircle } from 'lucide-react';
 import Avatar from './Avatar.jsx';
 import MenuOption from '../MenuOption.jsx';
+import { RATING_OPTIONS } from '../../constants/ratings.js';
 
 export const DEVIATION_MAX = 500;
+
+export function RatingReplies({ onSelect, disabled }) {
+  return (
+    <div className="flex items-end justify-start gap-2">
+      <Avatar size={26} />
+      <div className="glass neu-raised min-w-[220px] rounded-2xl rounded-bl-sm border border-white/60 bg-white/65 p-1.5">
+        {RATING_OPTIONS.map(({ points, label, color, icon: Icon }) => (
+          <MenuOption key={points} icon={<Icon size={16} />} color={color} onClick={() => onSelect(points)} disabled={disabled}>
+            {points} · {label}
+          </MenuOption>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function QuickReplies({ onYes, onNo, disabled }) {
   return (
@@ -20,7 +36,7 @@ export function QuickReplies({ onYes, onNo, disabled }) {
   );
 }
 
-export function DeviationBar({ active, text, onTextChange, onSend, disabled }) {
+export function DeviationBar({ active, text, onTextChange, onSend, disabled, idlePlaceholder = 'Responde con Sí o No' }) {
   const canSend = active && !disabled && text.trim() !== '';
 
   function handleSubmit(e) {
@@ -49,7 +65,7 @@ export function DeviationBar({ active, text, onTextChange, onSend, disabled }) {
           onKeyDown={handleKeyDown}
           disabled={!active || disabled}
           autoFocus={active}
-          placeholder={active ? 'Describe la desviación…' : 'Responde con Sí o No'}
+          placeholder={active ? 'Describe la desviación…' : idlePlaceholder}
           className="neu-inset max-h-32 flex-1 resize-none rounded-2xl border border-white/50 bg-white/50 px-4 py-2
             text-sm text-text placeholder:text-text-faint transition-shadow focus:outline-none focus:ring-2 focus:ring-accent/30
             disabled:cursor-not-allowed"

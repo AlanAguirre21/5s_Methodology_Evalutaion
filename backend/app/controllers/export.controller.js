@@ -69,7 +69,8 @@ export async function audits(req, res) {
     ['Supervisor', a => a.supervisor],
     ['Estado', a => (done(a) ? 'Completada' : 'En curso')],
     ['Puntos', a => a.score],
-    ['Preguntas', a => a.total],
+    ['Preguntas', a => a.questions],
+    ['Puntos máximos', a => a.total],
     ['Calificación', a => (done(a) ? Math.round((a.score / a.total) * 100) : null)],
     ['Resultado', a => a.result],
     ...sections.flatMap(s => [

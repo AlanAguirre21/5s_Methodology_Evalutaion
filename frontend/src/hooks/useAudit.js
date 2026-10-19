@@ -20,13 +20,13 @@ export function useAudit(auditId) {
     return () => { active = false; };
   }, [auditId]);
 
-  async function answer(value, deviation) {
+  async function answer(payload) {
     if (!state || state.status !== 'in_progress' || sending) return;
     setSending(true);
     setError(null);
 
     try {
-      setState(await answerAudit(auditId, { index: state.index, answer: value, deviation }));
+      setState(await answerAudit(auditId, { index: state.index, ...payload }));
     } catch (e) {
       if (e.status === 409) {
         // Frontend is out of sync with the backend: reload the real state

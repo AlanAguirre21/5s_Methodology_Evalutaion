@@ -1,9 +1,16 @@
 import { Schema, model } from 'mongoose';
+import { AVATAR_PATTERN } from './User.js';
+
+// Photo answers are stored inline as a data URL (the frontend resizes it before uploading)
+export const PHOTO_MAX_LENGTH = 1_500_000;
+export const PHOTO_PATTERN = AVATAR_PATTERN;
 
 const AnswerSchema = new Schema({
   question: { type: Schema.Types.ObjectId, required: true },
-  answer:   { type: Boolean, required: true },
+  answer:   { type: Boolean, default: null },   // yes_no questions
+  points:   { type: Number, min: 0, max: 2, default: null },   // rating questions
   deviation: { type: String, trim: true, maxlength: 500, default: null },
+  photo:    { type: String, default: null, maxlength: PHOTO_MAX_LENGTH, match: PHOTO_PATTERN },
 }, { _id: false });
 
 const SectionScoreSchema = new Schema({

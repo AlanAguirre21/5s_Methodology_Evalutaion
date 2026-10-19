@@ -21,7 +21,7 @@ function StatusBadge({ audit }) {
   }
   return (
     <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent ring-1 ring-accent/30">
-      En curso · {audit.answered}/{audit.total}
+      En curso · {audit.answered}/{audit.questions ?? audit.total}
     </span>
   );
 }

@@ -1,18 +1,23 @@
 import mongoose from 'mongoose';
 import Questionnaire from '../models/Questionnaire.js';
-import Audit from '../models/Audit.js';
+import Audit, { PHOTO_MAX_LENGTH, PHOTO_PATTERN } from '../models/Audit.js';
 import CatalogEntry from '../models/CatalogEntry.js';
 import HttpError from '../utils/HttpError.js';
 import User, { NAME_COLLATION } from '../models/User.js';
 import { HEADER_FIELDS, CATALOG_FIELDS, PHOTO_REQUIRED } from '../constants/headerFields.js';
-import { computeResult } from '../services/evaluation.service.js';
+import { computeResult, maxPoints, questionType, RATING_MAX } from '../services/evaluation.service.js';
 import { ROLES } from '../constants/roles.js';
 
 function flatten(questionnaire) {
   return questionnaire.sections.flatMap(s =>
-    s.questions.map(q => ({ id: q._id, text: q.text, section: { key: s.key, name: s.name } }))
+    s.questions.map(q => ({ id: q._id, text: q.text, type: questionType(questionnaire, q), section: { key: s.key, name: s.name } }))
   );
 }
+
+const totals = questions => ({
+  total: questions.reduce((n, q) => n + maxPoints(q.type), 0),
+  questions: questions.filter(q => maxPoints(q.type) > 0).length,
+});
 
 function buildState(audit, questionnaire) {
   const questions = flatten(questionnaire);
@@ -20,7 +25,7 @@ function buildState(audit, questionnaire) {
 
   const history = audit.answers.map(a => {
     const q = byId.get(a.question.toString());
-    return { question: q.text, section: q.section, answer: a.answer, deviation: a.deviation};
+    return { question: q.text, type: q.type, section: q.section, answer: a.answer, points: a.points ?? null, deviation: a.deviation, photo: a.photo ?? null };
   });
 
   const base = {
@@ -35,7 +40,8 @@ function buildState(audit, questionnaire) {
     evaluatedPerson: audit.evaluatedPerson,
     createdAt: audit.createdAt,
     completedAt: audit.completedAt,
-    total: questions.length,
+    ...totals(questions),
+    steps: questions.length,
     history,
   };
 
@@ -51,7 +57,7 @@ function buildState(audit, questionnaire) {
 
   const index = audit.answers.length;
   const q = questions[index];
-  return { ...base, status: 'in_progress', index, section: q.section, question: { id: q.id, text: q.text } };
+  return { ...base, status: 'in_progress', index, section: q.section, question: { id: q.id, text: q.text, type: q.type } };
 }
 
 const evaluatedFilter = user => ({ $or: [{ evaluated: user._id }, { evaluated: null, evaluatedPerson: user.name }] });
@@ -116,12 +122,13 @@ export async function start({ questionnaireKey, ...body }, user) {
   return buildState(audit, questionnaire);
 }
 
+const QUESTIONNAIRE_INFO_FIELDS = 'key answerType sections.key sections.name sections.questions._id sections.questions.type';
+
+const toInfo = questionnaire => ({ key: questionnaire.key, ...totals(flatten(questionnaire)) });
+
 async function questionnaireInfo(filter) {
-  const questionnaires = await Questionnaire.find(filter).select('key sections.questions._id').lean();
-  return new Map(questionnaires.map(q => [
-    q._id.toString(),
-    { key: q.key, total: q.sections.reduce((n, s) => n + s.questions.length, 0) },
-  ]));
+  const questionnaires = await Questionnaire.find(filter).select(QUESTIONNAIRE_INFO_FIELDS).lean();
+  return new Map(questionnaires.map(q => [q._id.toString(), toInfo(q)]));
 }
 
 function toListItem(a, info) {
@@ -132,8 +139,9 @@ function toListItem(a, info) {
     status: a.status,
     createdAt: a.createdAt,
     completedAt: a.completedAt,
-    answered: a.answers.length,
+    answered: a.answers.filter(x => x.answer !== null || x.points !== null).length,
     total: questionnaire?.total,
+    questions: questionnaire?.questions,
     score: a.score,
     result: a.result,
     costCenter: a.costCenter,
@@ -153,6 +161,7 @@ export async function list(questionnaireKey) {
   const info = await questionnaireInfo({ key: questionnaireKey });
 
   const audits = await Audit.find({ questionnaire: { $in: [...info.keys()] } })
+    .select('-answers.photo')
     .sort({ createdAt: -1 })
     .limit(500)
     .lean();
@@ -166,22 +175,20 @@ export async function exportData(questionnaireKey) {
 
   const questionnaires = await Questionnaire.find({ key: questionnaireKey })
     .sort({ version: -1 })
-    .select('key sections.key sections.name sections.questions._id')
+    .select(QUESTIONNAIRE_INFO_FIELDS)
     .lean();
 
-  const info = new Map(questionnaires.map(q => [
-    q._id.toString(),
-    { key: q.key, total: q.sections.reduce((n, s) => n + s.questions.length, 0) },
-  ]));
+  const info = new Map(questionnaires.map(q => [q._id.toString(), toInfo(q)]));
 
   const sections = [];
   for (const q of questionnaires) {
     for (const s of q.sections) {
+      if (!s.questions.some(question => maxPoints(questionType(q, question)) > 0)) continue;
       if (!sections.some(known => known.key === s.key)) sections.push({ key: s.key, name: s.name });
     }
   }
 
-  const audits = await Audit.find({ questionnaire: { $in: [...info.keys()] } }).sort({ createdAt: -1 }).lean();
+  const audits = await Audit.find({ questionnaire: { $in: [...info.keys()] } }).select('-answers.photo').sort({ createdAt: -1 }).lean();
 
   return {
     sections,
@@ -207,6 +214,7 @@ export async function listMine(user, from, to) {
   const info = await questionnaireInfo({});
 
   const audits = await Audit.find({ status: 'completed', ...evaluatedFilter(user), createdAt: { $gte: start, $lte: end } })
+    .select('-answers.photo')
     .sort({ createdAt: -1 })
     .limit(1000)
     .lean();
@@ -219,12 +227,30 @@ export async function getState(id, user) {
   return buildState(audit, questionnaire);
 }
 
-export async function answer(id, index, value, deviation, user) {
-  if (typeof value !== 'boolean') throw new HttpError(400, 'answer must be true or false');
-  if (!Number.isInteger(index))  throw new HttpError(400, 'index must be an integer');
-  if (value === false && (typeof deviation !== 'string' || !deviation.trim())) {
-    throw new HttpError(400, 'deviation is required when answer is No');
+function requireDeviation(deviation, when) {
+  if (typeof deviation !== 'string' || !deviation.trim()) throw new HttpError(400, `deviation is required when ${when}`);
+  return deviation.trim();
+}
+
+function toAnswer(question, { answer: value, points, deviation, photo }) {
+  if (question.type === 'photo') {
+    if (typeof photo !== 'string' || photo.length > PHOTO_MAX_LENGTH || !PHOTO_PATTERN.test(photo)) {
+      throw new HttpError(400, 'photo must be a JPEG, PNG or WebP image of at most 1 MB');
+    }
+    return { question: question.id, photo };
   }
+
+  if (question.type === 'rating') {
+    if (!Number.isInteger(points) || points < 0 || points > RATING_MAX) throw new HttpError(400, `points must be 0 to ${RATING_MAX}`);
+    return { question: question.id, points, deviation: points === 0 ? requireDeviation(deviation, 'points is 0') : null };
+  }
+
+  if (typeof value !== 'boolean') throw new HttpError(400, 'answer must be true or false');
+  return { question: question.id, answer: value, deviation: value ? null : requireDeviation(deviation, 'answer is No') };
+}
+
+export async function answer(id, index, body, user) {
+  if (!Number.isInteger(index))  throw new HttpError(400, 'index must be an integer');
 
   const { audit, questionnaire } = await loadAudit(id, user);
   const questions = flatten(questionnaire);
@@ -232,11 +258,7 @@ export async function answer(id, index, value, deviation, user) {
   if (audit.status === 'completed')   throw new HttpError(409, 'Audit already completed');
   if (index !== audit.answers.length) throw new HttpError(409, 'Question index mismatch');
 
-  audit.answers.push({ 
-    question: questions[index].id, 
-    answer: value,
-    deviation: value ? null :deviation.trim(),
-   });
+  audit.answers.push(toAnswer(questions[index], body));
 
   if (audit.answers.length === questions.length) {
     const { sectionScores, score, result } = computeResult(questionnaire, audit.answers);
