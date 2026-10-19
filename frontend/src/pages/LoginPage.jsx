@@ -6,18 +6,20 @@ import Button from '../components/Button.jsx';
 import { Input, Label } from '../components/Input.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import { PANEL } from '../constants/styles.js';
+import { EMAIL_PATTERN } from '../constants/users.js';
 
 export default function LoginPage() {
   const { user, login } = useAuth();
   const location = useLocation();
 
-  const [name, setName]             = useState('');
+  const [email, setEmail]           = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState(null);
 
   if (user) return <Navigate to={location.state?.from ?? '/'} replace />;
 
-  const isValid = name.trim() !== '';
+  const cleanEmail = email.trim().toLowerCase();
+  const isValid = EMAIL_PATTERN.test(cleanEmail);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -26,7 +28,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(name.trim());
+      await login(cleanEmail);
     } catch (err) {
       setError(err.message);
       setSubmitting(false);
@@ -48,20 +50,22 @@ export default function LoginPage() {
         </hgroup>
 
         <div className="mt-6">
-          <Label htmlFor="name">Nombre</Label>
+          <Label htmlFor="email">Correo</Label>
           <Input
-            id="name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            maxLength={100}
+            id="email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            maxLength={254}
             autoFocus
-            autoComplete="name"
+            autoComplete="email"
             spellCheck={false}
-            placeholder="Tu nombre completo"
+            placeholder="tu.correo@zf.com"
+            aria-describedby="email-hint"
             className="py-2"
           />
-          <p id="name-hint" className="mt-1 text-xs text-text-faint">
-            Ingresa tu nombre completo para iniciar sesión.
+          <p id="email-hint" className="mt-1 text-xs text-text-faint">
+            Ingresa tu correo para iniciar sesión.
           </p>
         </div>
 

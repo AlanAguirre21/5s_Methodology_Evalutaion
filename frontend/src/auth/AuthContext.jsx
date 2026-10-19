@@ -6,8 +6,8 @@ import * as authApi from '../api/auth.js';
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(getSession);   // { token, user } | null
 
-  const login = useCallback(async name => {
-    const next = await authApi.login(name);
+  const login = useCallback(async email => {
+    const next = await authApi.login(email);
     saveSession(next);
     setSession(next);
     return next.user;

@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 import Questionnaire from '../models/Questionnaire.js';
 import Audit, { PHOTO_MAX_LENGTH, PHOTO_PATTERN } from '../models/Audit.js';
-import CatalogEntry from '../models/CatalogEntry.js';
+import Area from '../models/Area.js';
 import HttpError from '../utils/HttpError.js';
-import User, { NAME_COLLATION } from '../models/User.js';
-import { HEADER_FIELDS, CATALOG_FIELDS, PHOTO_REQUIRED } from '../constants/headerFields.js';
+import User from '../models/User.js';
+import { HEADER_FIELDS } from '../constants/headerFields.js';
 import { computeResult, maxPoints, questionType, RATING_MAX } from '../services/evaluation.service.js';
 import { ROLES } from '../constants/roles.js';
 
@@ -33,7 +33,7 @@ function buildState(audit, questionnaire) {
     questionnaireKey: questionnaire.key,
     title: questionnaire.title,
     costCenter: audit.costCenter,
-    area: audit.area,
+    area: audit.area ?? audit.department,
     supervisor: audit.supervisor,
     department: audit.department,
     workshop: audit.workshop,
@@ -60,10 +60,16 @@ function buildState(audit, questionnaire) {
   return { ...base, status: 'in_progress', index, section: q.section, question: { id: q.id, text: q.text, type: q.type } };
 }
 
-const evaluatedFilter = user => ({ $or: [{ evaluated: user._id }, { evaluated: null, evaluatedPerson: user.name }] });
+const evaluatedFilter = user => ({ $or: [
+  { evaluated: user._id },
+  ...(user.email ? [{ evaluatedEmail: user.email }] : []),
+  { evaluated: null, evaluatedEmail: null, evaluatedPerson: user.name },
+] });
 
 function isEvaluated(audit, user) {
-  return audit.evaluated ? audit.evaluated.equals(user._id) : audit.evaluatedPerson === user.name;
+  if (audit.evaluated?.equals(user._id)) return true;
+  if (audit.evaluatedEmail) return audit.evaluatedEmail === user.email;
+  return !audit.evaluated && audit.evaluatedPerson === user.name;
 }
 
 async function loadAudit(id, user) {
@@ -81,44 +87,31 @@ async function loadAudit(id, user) {
   return { audit, questionnaire };
 }
 
-function requireText(value, name) {
-  if (typeof value !== 'string' || !value.trim()) throw new HttpError(400, `${name} is required`);
-  return value.trim();
-}
-
-export async function start({ questionnaireKey, ...body }, user) {
+export async function start({ questionnaireKey, areaId }, user) {
   if (typeof questionnaireKey !== 'string') throw new HttpError(400, 'questionnaireKey is required');
-  const names = HEADER_FIELDS[questionnaireKey];
-  if (!names) throw new HttpError(404, 'Questionnaire not found');
+  if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
+  if (!mongoose.isValidObjectId(areaId)) throw new HttpError(400, 'areaId is required');
 
-  const fields = Object.fromEntries(names.map(n => [n, requireText(body[n], n)]));
+  const area = await Area.findOne({ _id: areaId, active: true }).lean();
+  if (!area) throw new HttpError(400, 'El área no existe o está desactivada');
+  if (!area.manager) throw new HttpError(400, 'El área no tiene responsable. Agrégalo en Áreas.');
 
-  const catalogNames = CATALOG_FIELDS[questionnaireKey];
-  const registered = await Promise.all(catalogNames.map(n =>
-    CatalogEntry.exists({ questionnaireKey, field: n, value: fields[n] })
-  ));
-  const missing = catalogNames.filter((n, i) => !registered[i]);
-  if (missing.length) throw new HttpError(400, `Not registered: ${missing.join(', ')}`);
-
-  const person = await User.findOne({ name: fields.evaluatedPerson, active: true })
-    .collation(NAME_COLLATION)
-    .select('name')
-    .lean();
-  if (!person) throw new HttpError(400, 'La persona a evaluar no es un usuario registrado');
-  fields.evaluatedPerson = person.name;
-
-  if (PHOTO_REQUIRED.includes(questionnaireKey) && !(await User.exists({ _id: person._id, avatar: { $ne: null } }))) {
-    throw new HttpError(400, 'La persona a evaluar necesita una foto de perfil');
-  }
-
-  if (PHOTO_REQUIRED.includes(questionnaireKey) && !(await User.exists({ _id: user._id, avatar: { $ne: null } }))) {
-    throw new HttpError(400, 'Para esta evaluación necesitas una foto en tu perfil');
-  }
+  const managerUser = await User.findOne({ email: area.manager.email, active: true }).select('_id').lean();
 
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
 
-  const audit = await Audit.create({ questionnaire: questionnaire._id, auditor: user._id, evaluated: person._id, supervisor: user.name, ...fields });
+  const audit = await Audit.create({
+    questionnaire: questionnaire._id,
+    auditor: user._id,
+    supervisor: user.name,
+    areaRef: area._id,
+    area: area.name,
+    costCenter: area.costCenter || null,
+    evaluatedPerson: area.manager.name,
+    evaluatedEmail: area.manager.email,
+    evaluated: managerUser?._id ?? null,
+  });
   return buildState(audit, questionnaire);
 }
 
@@ -145,7 +138,7 @@ function toListItem(a, info) {
     score: a.score,
     result: a.result,
     costCenter: a.costCenter,
-    area: a.area,
+    area: a.area ?? a.department,
     supervisor: a.supervisor,
     department: a.department,
     workshop: a.workshop,

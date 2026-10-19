@@ -22,7 +22,9 @@ const SectionScoreSchema = new Schema({
 const AuditSchema = new Schema({
   questionnaire: { type: Schema.Types.ObjectId, ref: 'Questionnaire', required: true },
   auditor:       { type: Schema.Types.ObjectId, ref: 'User', default: null },   // user who made it; null in audits from before users existed
-  evaluated:     { type: Schema.Types.ObjectId, ref: 'User', default: null },   // user evaluated; null in audits from before it was a user
+  evaluated:     { type: Schema.Types.ObjectId, ref: 'User', default: null },   // user evaluated, when the area manager is a registered user
+  areaRef:       { type: Schema.Types.ObjectId, ref: 'Area', default: null },   // null in audits from before areas were registered
+  evaluatedEmail: { type: String, trim: true, lowercase: true, maxlength: 254, default: null },   // area manager's email
   costCenter:    { type: String, trim: true, maxlength: 100 },     
   area:          { type: String, trim: true, maxlength: 100 },    
   supervisor:    { type: String, trim: true, maxlength: 100 },     

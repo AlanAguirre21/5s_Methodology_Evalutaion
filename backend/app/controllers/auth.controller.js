@@ -1,12 +1,13 @@
-import User, { NAME_COLLATION, cleanName, toPublicUser } from '../models/User.js';
+import User, { cleanEmail, toPublicUser } from '../models/User.js';
 import HttpError from '../utils/HttpError.js';
 
 export async function login(req, res) {
-  const name = cleanName(req.body?.name);
-  if (!name) throw new HttpError(400, 'El nombre es obligatorio');
+  const email = cleanEmail(req.body?.email);
+  if (!email) throw new HttpError(400, 'El correo es obligatorio');
 
-  const user = await User.findOne({ name, active: true }).collation(NAME_COLLATION).lean();
-  if (!user) throw new HttpError(404, 'Usuario no registrado');
+  const user = await User.findOne({ email }).lean();
+  if (!user) throw new HttpError(404, 'Correo no registrado');
+  if (!user.active) throw new HttpError(403, 'Tu usuario está desactivado. Pide a un administrador que lo active.');
 
   res.json({ token: String(user._id), user: toPublicUser(user) });
 }

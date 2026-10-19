@@ -39,8 +39,8 @@ export default function AppHeader() {
             )}
                         {isAdmin && (
               <NavLink to="/personas" className={linkClass}>
-                <span className="hidden sm:inline">Elementos de auditoría</span>
-                <span className="sm:hidden">Elementos</span>
+                <span className="hidden sm:inline">Áreas</span>
+                <span className="sm:hidden">Áreas</span>
               </NavLink>
             )}
             {isAdmin && (

@@ -5,7 +5,7 @@ import { ROLES } from '../constants/roles.js';
 
 const router = express.Router();
 
-router.post('/', requireRole(ROLES.ADMIN), ctrl.start);              // { questionnaireKey, evaluatedPerson, + piso: costCenter, area | oficina: department, workshop }
+router.post('/', requireRole(ROLES.ADMIN), ctrl.start);              // { questionnaireKey, areaId }
 router.get('/', requireRole(ROLES.ADMIN), ctrl.list);   // ?questionnaireKey=piso|oficina
 router.get('/mine', ctrl.listMine);        // ?from=&to= (ISO dates) — completed audits where the user was evaluated
 router.get('/:id', ctrl.getState);

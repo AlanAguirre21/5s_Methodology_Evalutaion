@@ -33,7 +33,7 @@ export default function RecordPage() {
 
   useEffect(() => {
     let active = true;
-    listUsers()
+    listUsers({ all: true })
       .then(items => { if (active) setUsers(items); })
       .catch(() => {});
     return () => { active = false; };

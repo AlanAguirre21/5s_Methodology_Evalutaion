@@ -7,7 +7,7 @@ import AuditFormPage from './pages/AuditFormPage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
 import RecordPage from './pages/RecordPage.jsx';
-import PeoplePage from './pages/PeoplePage.jsx';
+import AreasPage from './pages/AreasPage.jsx';
 import AuditDetailPage from './pages/AuditDetailPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import NewUserPage from './pages/users/NewUserPage.jsx';
@@ -33,7 +33,7 @@ export default function App() {
               <Route element={<RequireRole roles={[ROLES.ADMIN]} />}>
                 <Route path="/usuarios" element={<UsersPage />} />
                 <Route path="/registro" element={<RecordPage />} />
-                <Route path="/personas" element={<PeoplePage />} />
+                <Route path="/personas" element={<AreasPage />} />
                 <Route path="/audits/new/:questionnaireKey" element={<AuditFormPage />} />
                 <Route path="/audits/:auditId" element={<ChatPage />} />
                 <Route path="/audits/:auditId/result" element={<ResultPage />} />

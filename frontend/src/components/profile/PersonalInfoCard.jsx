@@ -4,18 +4,25 @@ import StatusMessage from '../StatusMessage.jsx';
 import { Input, Label } from '../Input.jsx';
 import { updateMe } from '../../api/users.js';
 import { PANEL } from '../../constants/styles.js';
+import { EMAIL_PATTERN } from '../../constants/users.js';
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'long' });
 
 export default function PersonalInfoCard({ user, onSaved, update = updateMe, own = true }) {
+  const locked = user.isSystem && !own;   // only the control user can edit itself
+  const emailLocked = locked || user.isSystem;
   const [name, setName]     = useState(user.name);
+  const [email, setEmail]   = useState(user.email ?? '');
   const [busy, setBusy]     = useState(false);
   const [error, setError]   = useState(null);
   const [saved, setSaved]   = useState(false);
 
   const cleanName = name.trim().replace(/\s+/g, ' ');
-  const changed = cleanName !== user.name;
-  const isValid = cleanName.length >= 3;
+  const cleanEmail = email.trim().toLowerCase();
+  const nameChanged = cleanName !== user.name;
+  const emailChanged = cleanEmail !== (user.email ?? '');
+  const changed = nameChanged || emailChanged;
+  const isValid = !locked && cleanName.length >= 3 && EMAIL_PATTERN.test(cleanEmail);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -25,9 +32,13 @@ export default function PersonalInfoCard({ user, onSaved, update = updateMe, own
     setSaved(false);
 
     try {
-      const updated = await update({ name: cleanName });
+      const updated = await update({
+        ...(nameChanged && { name: cleanName }),
+        ...(emailChanged && { email: cleanEmail }),
+      });
       onSaved(updated);
       setName(updated.name);
+      setEmail(updated.email ?? '');
       setSaved(true);
     } catch (err) {
       setError(err.message);
@@ -47,14 +58,33 @@ export default function PersonalInfoCard({ user, onSaved, update = updateMe, own
             id="profile-name"
             value={name}
             onChange={e => { setName(e.target.value); setSaved(false); }}
+            disabled={locked}
             maxLength={100}
             autoComplete={own ? 'name' : 'off'}
-            aria-describedby="profile-name-hint"
           />
-          <p id="profile-name-hint" className="mt-1 text-xs text-text-faint">
-            {own
-              ? 'Es el nombre con el que inicias sesión. Si lo cambias, usa el nuevo la próxima vez.'
-              : 'Es el nombre con el que inicia sesión. Si lo cambias, avísale para que use el nuevo.'}
+        </div>
+
+        <div>
+          <Label htmlFor="profile-email">Correo</Label>
+          <Input
+            id="profile-email"
+            type="email"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setSaved(false); }}
+            disabled={emailLocked}
+            maxLength={254}
+            autoComplete={own ? 'email' : 'off'}
+            spellCheck={false}
+            aria-describedby="profile-email-hint"
+          />
+          <p id="profile-email-hint" className="mt-1 text-xs text-text-faint">
+            {user.isSystem
+              ? 'El correo de la cuenta de control no se puede cambiar.'
+              : own
+              ? 'Es el correo con el que inicias sesión. Si lo cambias, usa el nuevo la próxima vez.'
+              : user.email
+                ? 'Es el correo con el que inicia sesión. Si lo cambias, avísale para que use el nuevo.'
+                : 'Este usuario no tiene correo y no puede iniciar sesión hasta que se le asigne uno.'}
           </p>
         </div>
 
@@ -67,11 +97,13 @@ export default function PersonalInfoCard({ user, onSaved, update = updateMe, own
 
         {error && <StatusMessage error={error} />}
 
-        <div className="flex items-center gap-3">
+        {locked && <p className="text-xs text-text-faint">Esta es la cuenta de control: solo ella misma puede cambiar su nombre y su foto.</p>}
+
+        <div className={`flex items-center gap-3 ${locked ? 'hidden' : ''}`}>
           <Button type="submit" variant="primary" disabled={!changed || !isValid || busy}>
             {busy ? 'Guardando…' : 'Guardar cambios'}
           </Button>
-          {changed && !busy && <Button onClick={() => { setName(user.name); setError(null); }}>Descartar</Button>}
+          {changed && !busy && <Button onClick={() => { setName(user.name); setEmail(user.email ?? ''); setError(null); }}>Descartar</Button>}
           {saved && !changed && <span role="status" className="text-sm text-text-muted">Cambios guardados.</span>}
         </div>
       </form>

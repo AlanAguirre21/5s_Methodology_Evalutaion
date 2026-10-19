@@ -22,6 +22,7 @@ export default function UserProfileModal({ user, onSaved, onClose }) {
   }
 
   const own = user?.id === me.id;
+  const locked = Boolean(user?.isSystem) && !own;
   const update = data => updateUser(user.id, data);
 
   return createPortal(
@@ -39,13 +40,15 @@ export default function UserProfileModal({ user, onSaved, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
-                <ShieldCheck size={14} /> Editando como administrador
+                <ShieldCheck size={14} /> {locked ? 'Cuenta de control · solo lectura' : 'Editando como administrador'}
               </p>
               <h2 id="user-profile-modal-title" className="mt-2 truncate text-xl font-semibold text-text">
                 Perfil de {user.name}
               </h2>
               <p className="text-sm text-text-muted">
-                {own ? 'Este es tu propio usuario.' : 'Los cambios se aplican a este usuario, no a tu perfil.'}
+                {locked
+                  ? 'Solo esta cuenta puede cambiar su nombre y su foto.'
+                  : own ? 'Este es tu propio usuario.' : 'Los cambios se aplican a este usuario, no a tu perfil.'}
               </p>
             </div>
             <button
@@ -59,7 +62,7 @@ export default function UserProfileModal({ user, onSaved, onClose }) {
           </div>
 
           <div key={user.id} className="mt-5 grid items-start gap-4 md:grid-cols-[16rem_1fr]">
-            <AvatarEditor user={user} onSaved={handleSaved} update={update} />
+            <AvatarEditor user={user} onSaved={handleSaved} update={update} readOnly={locked} />
             <PersonalInfoCard user={user} onSaved={handleSaved} update={update} own={own} />
           </div>
         </div>

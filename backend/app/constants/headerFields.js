@@ -1,19 +1,13 @@
-// Fields chosen when an audit starts. The supervisor is not one of them: it is always the logged-in user.
-export const HEADER_FIELDS = {
-  piso:    ['costCenter', 'area', 'evaluatedPerson'],
-  oficina: ['workshop', 'department', 'evaluatedPerson'],
-};
+// Fields an audit is started with. All come from the chosen area; the supervisor is always the logged-in user.
+const AREA_FIELDS = ['area', 'costCenter', 'evaluatedPerson'];
 
-export const CATALOG_FIELDS = Object.fromEntries(
-  Object.entries(HEADER_FIELDS).map(([key, fields]) => [key, fields.filter(f => f !== 'evaluatedPerson')])
-);
+export const HEADER_FIELDS = {
+  piso:    AREA_FIELDS,
+  oficina: AREA_FIELDS,
+};
 
 export const FIELD_LABELS = {
-  costCenter:      'Centro de coste',
   area:            'Área',
-  evaluatedPerson: 'Persona',
-  department:      'Área',
-  workshop:        'Taller',
+  costCenter:      'Centro de coste',
+  evaluatedPerson: 'Responsable',
 };
-
-export const PHOTO_REQUIRED = ['oficina'];

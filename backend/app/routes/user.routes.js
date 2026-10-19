@@ -5,11 +5,11 @@ import { ROLES } from '../constants/roles.js';
 
 const router = express.Router();
 
-router.get('/', requireRole(ROLES.ADMIN), ctrl.list);
-router.get('/names', requireRole(ROLES.ADMIN), ctrl.listNames);       // [{ id, name, hasAvatar }] to pick the person to evaluate
-router.post('/', ctrl.create);                                       // { name, role? }
-router.patch('/me', requireAuth, ctrl.updateMe);                      // { name?, avatar? }
-router.patch('/:id', requireRole(ROLES.ADMIN), ctrl.update);          // { name?, avatar? }
+router.get('/', requireRole(ROLES.ADMIN), ctrl.list);                // ?all=true includes deactivated users
+router.post('/', ctrl.create);                                       // { name, email, role? }
+router.patch('/me', requireAuth, ctrl.updateMe);                      // { name?, email?, avatar? }
+router.patch('/:id', requireRole(ROLES.ADMIN), ctrl.update);          // { name?, email?, avatar? }
 router.patch('/:id/role', requireRole(ROLES.ADMIN), ctrl.updateRole); // { role }
+router.patch('/:id/active', requireRole(ROLES.ADMIN), ctrl.setActive); // { active } — never the control user, yourself or the last admin
 
 export default router;

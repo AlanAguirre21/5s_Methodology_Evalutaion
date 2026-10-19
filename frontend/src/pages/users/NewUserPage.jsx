@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth.js';
 import { createUser } from '../../api/users.js';
 import { ROLES } from '../../constants/roles.js';
 import { PANEL } from '../../constants/styles.js';
+import { EMAIL_PATTERN } from '../../constants/users.js';
 
 // Self-registration from the login page. Admins add users (and choose roles) in UsersPage.
 export default function NewUserPage() {
@@ -15,13 +16,15 @@ export default function NewUserPage() {
   const navigate = useNavigate();
 
   const [name, setName]         = useState('');
+  const [email, setEmail]       = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]       = useState(null);
 
   if (user && !submitting) return <Navigate to={user.role === ROLES.ADMIN ? '/usuarios' : '/'} replace />;
 
   const cleanName = name.trim().replace(/\s+/g, ' ');
-  const isValid = cleanName.length >= 3;
+  const cleanEmail = email.trim().toLowerCase();
+  const isValid = cleanName.length >= 3 && EMAIL_PATTERN.test(cleanEmail);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,8 +33,8 @@ export default function NewUserPage() {
     setError(null);
 
     try {
-      const newUser = await createUser({ name: cleanName });
-      await login(newUser.name);
+      const newUser = await createUser({ name: cleanName, email: cleanEmail });
+      await login(newUser.email);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err.message);
@@ -63,11 +66,26 @@ export default function NewUserPage() {
             autoFocus
             autoComplete="off"
             placeholder="p. ej. Juan Pérez"
-            aria-describedby="name-hint"
             className="py-2"
           />
-          <p id="name-hint" className="mt-1 text-xs text-text-faint">
-            Con este nombre se inicia sesión. No importan mayúsculas ni acentos.
+        </div>
+
+        <div className="mt-4">
+          <Label htmlFor="email">Correo</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            maxLength={254}
+            autoComplete="email"
+            spellCheck={false}
+            placeholder="p. ej. juan.perez@zf.com"
+            aria-describedby="email-hint"
+            className="py-2"
+          />
+          <p id="email-hint" className="mt-1 text-xs text-text-faint">
+            Con este correo se inicia sesión.
           </p>
         </div>
 

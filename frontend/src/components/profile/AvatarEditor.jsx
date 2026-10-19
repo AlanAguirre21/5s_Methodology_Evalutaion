@@ -24,7 +24,7 @@ async function toAvatarDataUrl(file) {
   return canvas.toDataURL('image/jpeg', 0.85);
 }
 
-export default function AvatarEditor({ user, onSaved, update = updateMe }) {
+export default function AvatarEditor({ user, onSaved, update = updateMe, readOnly = false }) {
   const inputRef = useRef(null);
   const [busy, setBusy]   = useState(false);
   const [error, setError] = useState(null);
@@ -65,6 +65,7 @@ export default function AvatarEditor({ user, onSaved, update = updateMe }) {
       <p className="mt-4 max-w-full truncate text-lg font-semibold text-text">{user.name}</p>
 
       <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="sr-only" tabIndex={-1} aria-hidden="true" />
+      {!readOnly && <>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         <Button variant="primary" onClick={() => inputRef.current.click()} disabled={busy}>
           <Camera size={16} /> {busy ? 'Guardando…' : user.avatar ? 'Cambiar foto' : 'Subir foto'}
@@ -76,6 +77,7 @@ export default function AvatarEditor({ user, onSaved, update = updateMe }) {
         )}
       </div>
       <p className="mt-3 text-xs text-text-faint">Se recorta al centro en forma cuadrada.</p>
+      </>}
 
       {error && <div className="mt-3 w-full text-left"><StatusMessage error={error} /></div>}
     </section>

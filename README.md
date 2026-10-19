@@ -9,9 +9,7 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
 - **Dos tipos de evaluación**
   - **Piso de planta:** cuestionario organizado por las 5S.
   - **Oficina:** cuestionario propio (limpieza y orden, visualización, funcionalidad, seguridad, artículos privados).
-- **Formulario de inicio por tipo**, con datos que se eligen de listas:
-  - Piso: Centro de coste, Área, Persona a evaluar.
-  - Oficina: Área/Departamento, Taller, Persona a evaluar. Requiere que el usuario tenga foto en su perfil.
+- **Formulario de inicio:** en piso y en oficina solo se elige el **área**. Se muestran su centro de coste (si tiene) y su responsable, que es la persona evaluada.
   - El **supervisor** es siempre el usuario que inició sesión; no se elige.
 - **Evaluación tipo chat:** una pregunta a la vez, agrupadas por sección, con barra de progreso. Una evaluación sin terminar puede continuarse después.
 - **Resultado:** puntos obtenidos, calificación 0–100 y nivel (p. ej. *Puntaje Objetivo*).
@@ -20,7 +18,7 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
 - **Perfil** (`/perfil`): nombre, foto y rol del usuario. El rol es de solo lectura; un administrador puede cambiar el suyo tras confirmar.
 - **Historial** (`/historial`): evaluaciones completadas en las que el usuario fue la persona evaluada, en un periodo (un año por defecto), con gráfica de calificaciones.
 - **Usuarios** (`/usuarios`, solo administrador): lista de usuarios, cambio de rol y alta de usuarios.
-- **Elementos de auditoría** (`/personas`): catálogo de valores por tipo y campo, con búsqueda y paginación. **Solo los valores registrados aquí aparecen en los formularios**, y el backend rechaza cualquier otro.
+- **Áreas** (`/personas`, solo administrador): alta, edición y desactivación de áreas (nombre, centro de coste opcional y responsable con nombre y correo), con búsqueda. Las áreas no se eliminan: se desactivan tras confirmar y pueden volver a activarse. **Solo las áreas activas aparecen en los formularios.** Las áreas de `backend/app/seed/default_areas.json` se agregan solas al arrancar el backend y con `npm run seed` si no existen; las que ya existen no se modifican. Cada responsable de un área (las del archivo, y las que se agregan o editan en esta página) recibe un usuario con rol **Usuario** con su nombre y correo, si no tiene uno, para que vea en su **Historial** las evaluaciones en las que fue la persona evaluada.
 
 ## Tecnologías
 
@@ -46,12 +44,12 @@ Las versiones exactas están en [requirements.txt](requirements.txt).
 │   │   ├── models/             # Esquemas Mongoose (Audit, Questionnaire, CatalogEntry, Area)
 │   │   ├── routes/
 │   │   ├── middleware/         # Manejo de errores
-│   │   └── seed/               # Cuestionarios (floor.json, office.json) y script de carga
+│   │   └── seed/               # Cuestionarios (floor.json, office.json), áreas por defecto (default_areas.json) y script de carga
 │   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── pages/              # Inicio, formularios, chat, resultado, registros, detalle
-│   │   ├── components/         # Formularios, chat, layout, selects del catálogo
+│   │   ├── components/         # Formularios, chat, layout, modales
 │   │   ├── api/                # Llamadas al backend
 │   │   ├── constants/          # Tipos de evaluación y campos (etiquetas)
 │   │   └── hooks/              # useAudit (estado de una evaluación)
@@ -123,7 +121,7 @@ En desarrollo, Vite redirige las peticiones `/api` al backend (puerto 3000).
 |----------|-----------------|-------------|
 | backend  | `npm run dev`   | API con recarga automática |
 | backend  | `npm start`     | API sin recarga |
-| backend  | `npm run seed`  | Carga los cuestionarios de `app/seed` |
+| backend  | `npm run seed`  | Carga los cuestionarios y las áreas por defecto de `app/seed` |
 | frontend | `npm run dev`   | Servidor de desarrollo |
 | frontend | `npm run build` | Compilación para producción (`frontend/dist`) |
 | frontend | `npm run lint`  | Revisión de código (oxlint) |
@@ -166,38 +164,33 @@ Base: `http://localhost:3000/api`
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST   | `/auth/login` | Identificarse con `{ name }`; devuelve `{ token, user }` |
+| POST   | `/auth/login` | Identificarse con `{ email }`; devuelve `{ token, user }` |
 | GET    | `/auth/me` | Usuario de la sesión actual |
-| GET    | `/users` | Lista de usuarios (solo administrador) |
-| GET    | `/users/names` | `[{ id, name, hasAvatar }]` de los usuarios, para elegir a la persona a evaluar (solo administrador) |
-| POST   | `/users` | Crear usuario `{ name, role? }`; con sesión, solo un administrador puede crear usuarios; solo un administrador puede asignar `role: "admin"` |
-| PATCH  | `/users/me` | Editar el perfil propio `{ name?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
-| PATCH  | `/users/:id` | Editar el perfil de cualquier usuario `{ name?, avatar? }` (solo administrador) |
+| GET    | `/users` | Lista de usuarios activos; con `?all=true`, también los desactivados (solo administrador) |
+| POST   | `/users` | Crear usuario `{ name, email, role? }`; con sesión, solo un administrador puede crear usuarios; solo un administrador puede asignar `role: "admin"` |
+| PATCH  | `/users/me` | Editar el perfil propio `{ name?, email?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
+| PATCH  | `/users/:id` | Editar el perfil de cualquier usuario `{ name?, email?, avatar? }` (solo administrador) |
 | PATCH  | `/users/:id/role` | Cambiar el rol `{ role }` (solo administrador; siempre debe quedar al menos uno) |
+| PATCH  | `/users/:id/active` | Activar o desactivar `{ active }` (solo administrador). Un usuario desactivado no puede iniciar sesión y sus evaluaciones se conservan. No se puede desactivar la cuenta de control, el propio usuario ni el último administrador |
 | GET    | `/questionnaires` | Tipos de cuestionario disponibles |
-| GET    | `/catalog?questionnaireKey=piso\|oficina` | Valores registrados por campo (solo administrador, como todo `/catalog`) |
-| POST   | `/catalog` | Registrar un valor `{ questionnaireKey, field, value }` |
-| DELETE | `/catalog/:id` | Eliminar un valor (las evaluaciones anteriores no cambian) |
+| GET    | `/areas` | Áreas activas, para los formularios; con `?all=true` un administrador recibe también las inactivas |
+| POST   | `/areas` | Crear área `{ name, costCenter?, manager: { name, email } }` (solo administrador) |
+| PATCH  | `/areas/:id` | Editar área `{ name?, costCenter?, manager? }` (solo administrador) |
+| PATCH  | `/areas/:id/active` | Activar o desactivar `{ active }` (solo administrador; las áreas no se eliminan) |
 | GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones de todos los usuarios, más recientes primero (solo administrador) |
 | GET    | `/export/key` | Clave de solo lectura para el enlace de Power BI (solo administrador) |
 | GET    | `/export/:key/piso.csv` · `/export/:key/oficina.csv` | Evaluaciones del tipo con los puntos por sección, para Power BI. No usa sesión: se autoriza con la clave del enlace. Devuelve CSV; con `.json` o `.html` al final devuelve JSON o una página con la tabla |
 | GET    | `/audits/mine?from=&to=` | Evaluaciones del periodo (por defecto, el último año): las completadas en las que el usuario fue la persona evaluada |
-| POST   | `/audits` | Iniciar evaluación con `questionnaireKey` y los campos del tipo (solo administrador) |
+| POST   | `/audits` | Iniciar evaluación `{ questionnaireKey, areaId }` (solo administrador) |
 | GET    | `/audits/:id` | Estado completo de una evaluación (un administrador o la persona evaluada) |
 | POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` (solo administrador) |
 
 Salvo `/auth/login` y `POST /users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
-El inicio de sesión es solo **identificación** (solo el nombre, sin contraseña): el token es el id del usuario.
-El nombre es único y se compara sin distinguir mayúsculas ni acentos (`juan perez` = `Juan Pérez`).
-Siempre debe haber al menos un administrador: no se puede quitar el rol al último, y si no existe ninguno el backend (al arrancar) y `npm run seed` crean o promueven a `Admin 01` (o el valor de `ADMIN_NAME` en `backend/.env`).
+El inicio de sesión es solo **identificación** (solo el correo, sin contraseña): el token es el id del usuario.
+El correo es único y se compara sin distinguir mayúsculas. El nombre también es único (sin distinguir mayúsculas ni acentos). Los usuarios creados antes de que existiera el correo no pueden iniciar sesión hasta que un administrador les asigne uno en **Usuarios**.
+Siempre debe haber al menos un administrador: no se puede quitar el rol al último.
+La **cuenta de control** `Admin 01` (correo `admin@zf.test`) existe siempre: el backend (al arrancar) y `npm run seed` la crean si falta y la dejan activa, como administrador y con ese correo (`ADMIN_NAME` y `ADMIN_EMAIL` en `backend/.env` cambian los valores por defecto). Nadie más puede editarla: ni su perfil, ni su foto, ni su rol. Ella misma solo puede cambiar su nombre y su foto; su correo y su rol no se pueden cambiar.
 
-Campos para iniciar una evaluación:
+Para iniciar una evaluación solo se envía el `areaId` de un área activa con responsable. El backend guarda en la evaluación el nombre del área (`area`), su centro de coste (`costCenter`) y el responsable (`evaluatedPerson` y su correo). Si el correo del responsable es de un usuario registrado, ese usuario ve la evaluación en su **Historial**. `supervisor` no se envía: el backend guarda el nombre del usuario de la sesión.
 
-- **piso:** `costCenter`, `area`, `evaluatedPerson`
-- **oficina:** `department`, `workshop`, `evaluatedPerson` (el usuario de la sesión y la persona a evaluar deben tener foto de perfil)
-
-`supervisor` no se envía: el backend guarda el nombre del usuario de la sesión.
-
-Todos son obligatorios. `evaluatedPerson` debe ser el nombre de un usuario registrado; los demás deben estar registrados en el catálogo. Los errores se devuelven como `{ "error": "mensaje" }` con el código HTTP correspondiente.
-
-> `/api/areas` es un endpoint anterior que la interfaz ya no usa.
+Los errores se devuelven como `{ "error": "mensaje" }` con el código HTTP correspondiente.

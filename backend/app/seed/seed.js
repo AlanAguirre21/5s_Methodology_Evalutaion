@@ -4,11 +4,12 @@ import Questionnaire from '../models/Questionnaire.js';
 import Area from '../models/Area.js';
 import User from '../models/User.js';
 import ensureAdmin from '../utils/ensureAdmin.js';
+import ensureDefaultAreas from '../utils/ensureDefaultAreas.js';
+import ensureManagerUsers, { logManagerUsers } from '../utils/ensureManagerUsers.js';
 import floor from './floor.json' with { type: 'json' };
 import office from './office.json' with { type: 'json' };
 
 const QUESTIONNAIRES = [floor, office];
-const AREAS = ['Almacén', 'Producción', 'Mantenimiento'];
 const FIVE_S = ['seiri', 'seiton', 'seiso', 'seiketsu', 'shitsuke'];
 const FIVE_S_KEYS = ['piso']; 
 
@@ -43,15 +44,15 @@ try {
     }
   }
 
-  for (const name of AREAS) {
-    await Area.updateOne({ name }, { $setOnInsert: { name } }, { upsert: true });
-  }
-  console.log(`Areas ensured: ${AREAS.join(', ')}`);
+  await Area.syncIndexes();
+  const addedAreas = await ensureDefaultAreas();
+  console.log(addedAreas.length ? `Default areas added: ${addedAreas.join(', ')}` : 'Default areas: already registered');
 
   // Drops indexes the schema no longer has (the old unique "username") and builds the unique "name" one
   await User.syncIndexes();
   const createdAdmin = await ensureAdmin();
-  console.log(createdAdmin ? `No admin found: "${createdAdmin}" is now an admin` : 'Admin user: already exists');
+  console.log(createdAdmin ? `Control user "${createdAdmin}" created or restored as admin` : 'Control user: already exists');
+  logManagerUsers(await ensureManagerUsers());
 } catch (err) {
   console.error('Seed failed:', err.message);
   process.exitCode = 1;

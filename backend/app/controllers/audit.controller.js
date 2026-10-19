@@ -1,15 +1,8 @@
 import * as auditService from '../services/audit.service.js';
 
 export async function start(req, res) {
-  const {
-    questionnaireKey,
-    evaluatedPerson,                       // piso + oficina
-    costCenter, area,                      // piso
-    department, workshop,                  // oficina
-  } = req.body;
-  res.status(201).json(await auditService.start({
-    questionnaireKey, evaluatedPerson, costCenter, area, department, workshop,
-  }, req.user));
+  const { questionnaireKey, areaId } = req.body;
+  res.status(201).json(await auditService.start({ questionnaireKey, areaId }, req.user));
 }
 
 export async function list(req, res) {

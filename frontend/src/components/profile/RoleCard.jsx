@@ -58,7 +58,9 @@ export default function RoleCard({ user, onSaved }) {
         </div>
       </div>
 
-      {isAdmin ? (
+      {user.isSystem ? (
+        <p className="mt-4 text-xs text-text-faint">Esta es la cuenta de control: siempre es administrador.</p>
+      ) : isAdmin ? (
         <>
           <Button className="mt-4" disabled={onlyAdmin} onClick={() => { setError(null); setConfirming(true); }}>
             Cambiar mi rol a {ROLE_LABELS[ROLES.USER]}
