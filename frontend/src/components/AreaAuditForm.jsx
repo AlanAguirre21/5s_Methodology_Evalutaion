@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowLeft, CheckCircle2, Mail, Search, UserRound, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Mail, Plus, Search, UserRound, X } from 'lucide-react';
 import PageContainer from './layout/PageContainer.jsx';
 import StatusMessage from './StatusMessage.jsx';
 import SupervisingPerson from './SupervisingPerson.jsx';
+import AreaModal from './ui/AreaModal.jsx';
 import Button from './Button.jsx';
 import { Input } from './Input.jsx';
 import { PANEL, ACCENT_THEME } from '../constants/styles.js';
+import { createArea } from '../api/areas.js';
 
 const normalize = str => str.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
@@ -52,7 +54,18 @@ function AreaOption({ area, selected, onSelect }) {
   );
 }
 
-function AreaPicker({ areas, value, onChange }) {
+function AddAreaLink({ query, onAddNew, prominent }) {
+  return (
+    <p className={`text-sm ${prominent ? 'text-text-muted' : 'text-text-faint'}`}>
+      ¿No está el área que buscas?{' '}
+      <button type="button" onClick={() => onAddNew(query.trim())} className="inline-flex items-center gap-1 font-medium text-accent hover:underline">
+        <Plus size={14} /> {query.trim() ? `Agregar "${query.trim()}" como nueva área` : 'Agregar nueva área'}
+      </button>
+    </p>
+  );
+}
+
+function AreaPicker({ areas, value, onChange, onAddNew }) {
   const [query, setQuery] = useState('');
 
   const visible = useMemo(() => {
@@ -62,9 +75,10 @@ function AreaPicker({ areas, value, onChange }) {
 
   if (areas.length === 0) {
     return (
-      <p className="rounded-control border border-white/60 bg-white/50 p-4 text-sm text-text-muted">
-        No hay áreas activas. <Link to="/personas" className="font-medium text-accent hover:underline">Registra una en Áreas</Link>.
-      </p>
+      <div className="rounded-control border border-white/60 bg-white/50 p-4 text-sm text-text-muted">
+        <p>No hay áreas activas.</p>
+        <div className="mt-1"><AddAreaLink query="" onAddNew={onAddNew} prominent /></div>
+      </div>
     );
   }
 
@@ -104,13 +118,25 @@ function AreaPicker({ areas, value, onChange }) {
           <AreaOption key={a.id} area={a} selected={a.id === value} onSelect={onChange} />
         ))}
       </div>
+
+      <div className="mt-2">
+        <AddAreaLink query={query} onAddNew={onAddNew} prominent={visible.length === 0} />
+      </div>
     </div>
   );
 }
 
 // Start form for every evaluation type: only the area is chosen; its manager is the person evaluated
-export default function AreaAuditForm({ option, areas, onSubmit, submitting, error }) {
+export default function AreaAuditForm({ option, areas, onSubmit, submitting, error, onAreaCreated }) {
   const [areaId, setAreaId] = useState('');
+  const [creating, setCreating] = useState(false);   // false | { area: null, name }
+
+  async function saveNewArea(data) {
+    const { managerAccount: _, ...created } = await createArea(data);
+    onAreaCreated(created);
+    setAreaId(created.id);
+    setCreating(false);
+  }
 
   const { title, Icon } = option;
   const area = areas?.find(a => a.id === areaId) ?? null;
@@ -141,7 +167,9 @@ export default function AreaAuditForm({ option, areas, onSubmit, submitting, err
       <form onSubmit={handleSubmit} className={`mt-6 space-y-5 p-6 ${PANEL}`}>
         <fieldset>
           <legend className="mb-2 text-xs font-medium text-text-muted">Área a evaluar</legend>
-          {areas ? <AreaPicker areas={areas} value={areaId} onChange={setAreaId} /> : <StatusMessage loading />}
+          {areas
+            ? <AreaPicker areas={areas} value={areaId} onChange={setAreaId} onAddNew={name => setCreating({ area: null, name })} />
+            : <StatusMessage loading />}
         </fieldset>
 
         <SupervisingPerson />
@@ -152,6 +180,8 @@ export default function AreaAuditForm({ option, areas, onSubmit, submitting, err
           {submitting ? 'Iniciando…' : area ? `Iniciar auditoría · ${area.name}` : 'Selecciona un área'}
         </Button>
       </form>
+
+      <AreaModal open={creating} onSave={saveNewArea} onClose={() => setCreating(false)} />
     </PageContainer>
   );
 }

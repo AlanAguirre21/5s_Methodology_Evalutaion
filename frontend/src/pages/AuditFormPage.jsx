@@ -46,5 +46,19 @@ export default function AuditFormPage() {
     }
   }
 
-  return <AreaAuditForm key={questionnaireKey} option={option} areas={areas} onSubmit={handleSubmit} submitting={submitting} error={error} />;
+  function handleAreaCreated(area) {
+    setAreas(list => [...(list ?? []), area].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })));
+  }
+
+  return (
+    <AreaAuditForm
+      key={questionnaireKey}
+      option={option}
+      areas={areas}
+      onSubmit={handleSubmit}
+      onAreaCreated={handleAreaCreated}
+      submitting={submitting}
+      error={error}
+    />
+  );
 }

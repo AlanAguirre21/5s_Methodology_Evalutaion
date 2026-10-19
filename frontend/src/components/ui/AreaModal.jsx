@@ -6,8 +6,8 @@ import { EMAIL_PATTERN } from '../../constants/users.js';
 
 const clean = value => value.trim().replace(/\s+/g, ' ');
 
-function AreaForm({ area, onSave, onCancel }) {
-  const [name, setName]               = useState(area?.name ?? '');
+function AreaForm({ area, initialName = '', onSave, onCancel }) {
+  const [name, setName]               = useState(area?.name ?? initialName);
   const [costCenter, setCostCenter]   = useState(area?.costCenter ?? '');
   const [managerName, setManagerName] = useState(area?.manager?.name ?? '');
   const [managerEmail, setManagerEmail] = useState(area?.manager?.email ?? '');
@@ -76,7 +76,7 @@ function AreaForm({ area, onSave, onCancel }) {
   );
 }
 
-// open: false | { area } (area null = new)
+// open: false | { area, name? } (area null = new; name prefills a new area)
 export default function AreaModal({ open, onSave, onClose }) {
   const ref = useRef(null);
 
@@ -94,7 +94,7 @@ export default function AreaModal({ open, onSave, onClose }) {
       className="m-auto w-[calc(100%-2rem)] max-w-md rounded-panel border border-white/60 bg-surface p-0 text-text shadow-2xl
         backdrop:bg-black/30 backdrop:backdrop-blur-sm"
     >
-      {open && <AreaForm key={open.area?.id ?? 'new'} area={open.area} onSave={onSave} onCancel={onClose} />}
+      {open && <AreaForm key={open.area?.id ?? 'new'} area={open.area} initialName={open.name} onSave={onSave} onCancel={onClose} />}
     </dialog>
   );
 }
