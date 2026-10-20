@@ -132,10 +132,6 @@ En el servidor, [ecosystem.config.js](ecosystem.config.js) levanta una sola apli
 
 Requiere `bash` y PM2 instalados en el servidor.
 
-La aplicación se sirve por **HTTPS** (`https://<servidor>:5175`) con un certificado autofirmado que genera `@vitejs/plugin-basic-ssl` y guarda en `frontend/.cert` (no se sube al repositorio). El navegador solo permite abrir la cámara en conexiones seguras, así que sin HTTPS "Tomar foto" no funciona desde otros equipos. La primera vez, cada navegador muestra un aviso de conexión no privada: hay que elegir **Avanzado → Continuar**. Si se borra `frontend/.cert`, se genera un certificado nuevo y hay que volver a aceptarlo.
-
-El enlace de **Power BI** apunta directo al backend por HTTP (`http://<servidor>:3011/api/export/...`), porque Power BI no acepta el certificado autofirmado; el puerto del backend debe estar abierto en el firewall del servidor.
-
 ```bash
 # 1. Compilar el frontend
 cd frontend
