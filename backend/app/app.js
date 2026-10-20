@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import ensureAdmin from './utils/ensureAdmin.js';
 import ensureDefaultAreas from './utils/ensureDefaultAreas.js';
 import ensureManagerUsers, { logManagerUsers } from './utils/ensureManagerUsers.js';
+import removeInactive, { logRemoved } from './utils/removeInactive.js';
 import areaRoutes from './routes/area.routes.js';
 import auditRoutes from './routes/audit.routes.js';
 import questionnaireRoutes from './routes/questionnaire.routes.js';
@@ -35,6 +36,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT;
 
 await connectDB();
+logRemoved(await removeInactive());
 const createdAdmin = await ensureAdmin();
 if (createdAdmin) console.log(`Control user "${createdAdmin}" created or restored as admin`);
 const addedAreas = await ensureDefaultAreas();

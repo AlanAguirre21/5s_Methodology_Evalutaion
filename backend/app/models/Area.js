@@ -13,7 +13,6 @@ const AreaSchema = new Schema({
     name:       { type: String, required: true, unique: true, trim: true, maxlength: 80 },
     costCenter: { type: String, trim: true, maxlength: 100, default: '' },
     manager:    { type: ManagerSchema, default: null },   // the person evaluated; null in areas from before it existed
-    active:     { type: Boolean, default: true },
 }, { timestamps: true });
 
 AreaSchema.index({ key: 1 }, { unique: true, partialFilterExpression: { key: { $type: 'string' } } });
@@ -23,7 +22,6 @@ export const toPublicArea = a => ({
   name: a.name,
   costCenter: a.costCenter ?? '',
   manager: a.manager ?? null,
-  active: a.active,
   isDefault: Boolean(a.key),
   createdAt: a.createdAt,
 });

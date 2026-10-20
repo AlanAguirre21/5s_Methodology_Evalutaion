@@ -77,7 +77,7 @@ async function loadAudit(id, user) {
 
   const audit = await Audit.findById(id);
   if (!audit) throw new HttpError(404, 'Audit not found');
-  if (user.role !== ROLES.ADMIN && !isEvaluatedNow(audit, user, (await areaManagers()).managerOf)) {
+  if (user.role !== ROLES.ADMIN && !isEvaluatedNow(audit, user, (await areaLookup()).managerOf)) {
     throw new HttpError(403, 'Solo puedes consultar tus propias evaluaciones');
   }
 
@@ -92,11 +92,11 @@ export async function start({ questionnaireKey, areaId }, user) {
   if (!HEADER_FIELDS[questionnaireKey]) throw new HttpError(404, 'Questionnaire not found');
   if (!mongoose.isValidObjectId(areaId)) throw new HttpError(400, 'areaId is required');
 
-  const area = await Area.findOne({ _id: areaId, active: true }).lean();
-  if (!area) throw new HttpError(400, 'El área no existe o está desactivada');
+  const area = await Area.findById(areaId).lean();
+  if (!area) throw new HttpError(400, 'El área no existe');
   if (!area.manager) throw new HttpError(400, 'El área no tiene responsable. Agrégalo en Áreas.');
 
-  const managerUser = await User.findOne({ email: area.manager.email, active: true }).select('_id').lean();
+  const managerUser = await User.findOne({ email: area.manager.email }).select('_id').lean();
 
   const questionnaire = await Questionnaire.findOne({ key: questionnaireKey }).sort({ version: -1 }).lean();  // latest version
   if (!questionnaire) throw new HttpError(404, 'Questionnaire not found');
@@ -149,26 +149,36 @@ function toListItem(a, info) {
   };
 }
 
-// The evaluated person shown in the record and the export is the current manager of the audit's area
-// (by reference, or by name in audits from before areas were registered); the name saved in the audit is the fallback.
-async function areaManagers() {
-  const areas = await Area.find().select('name manager').lean();
+// The area, cost center and evaluated person shown in the record and the export are the current ones of the audit's area
+// (by reference, or by name in audits from before areas were registered), and the supervisor is the current name of
+// the user who made it; the values saved in the audit are the fallback.
+async function areaLookup() {
+  const areas = await Area.find().select('name costCenter manager').lean();
   const byId = new Map(areas.map(ar => [String(ar._id), ar]));
   const byName = new Map(areas.map(ar => [ar.name.toLocaleLowerCase('es'), ar]));
-  const managerOf = a => (a.areaRef ? byId.get(String(a.areaRef)) : byName.get((a.area ?? a.department ?? '').toLocaleLowerCase('es')))?.manager;
-  return { areas, managerOf };
+  const areaOf = a => (a.areaRef ? byId.get(String(a.areaRef)) : byName.get((a.area ?? a.department ?? '').toLocaleLowerCase('es')));
+  return { areas, areaOf, managerOf: a => areaOf(a)?.manager };
 }
 
-function withManagers(items, audits, managerOf) {
+async function withCurrentValues(items, audits, areaOf) {
+  const auditors = await User.find({ _id: { $in: audits.map(a => a.auditor).filter(Boolean) } }).select('name').lean();
+  const names = new Map(auditors.map(u => [String(u._id), u.name]));
+
   return items.map((item, i) => {
-    const manager = managerOf(audits[i]);
-    return manager ? { ...item, evaluatedPerson: manager.name, evaluatedEmail: manager.email } : item;
+    const area = areaOf(audits[i]);
+    const supervisor = audits[i].auditor && names.get(String(audits[i].auditor));
+    return {
+      ...item,
+      ...(supervisor && { supervisor }),
+      ...(area && { area: area.name, costCenter: area.costCenter || null }),
+      ...(area?.manager && { evaluatedPerson: area.manager.name, evaluatedEmail: area.manager.email }),
+    };
   });
 }
 
-async function withAreaManagers(items, audits) {
-  const { managerOf } = await areaManagers();
-  return withManagers(items, audits, managerOf);
+async function withCurrentAreas(items, audits) {
+  const { areaOf } = await areaLookup();
+  return withCurrentValues(items, audits, areaOf);
 }
 
 function isEvaluatedNow(audit, user, managerOf) {
@@ -187,7 +197,7 @@ export async function list(questionnaireKey) {
     .limit(500)
     .lean();
 
-  return withAreaManagers(audits.map(a => toListItem(a, info)), audits);
+  return withCurrentAreas(audits.map(a => toListItem(a, info)), audits);
 }
 
 // Every audit of one type, with the points of each section, for the Power BI export
@@ -213,7 +223,7 @@ export async function exportData(questionnaireKey) {
 
   return {
     sections,
-    audits: await withAreaManagers(audits.map(a => ({ ...toListItem(a, info), sectionScores: a.sectionScores })), audits),
+    audits: await withCurrentAreas(audits.map(a => ({ ...toListItem(a, info), sectionScores: a.sectionScores })), audits),
   };
 }
 
@@ -233,7 +243,7 @@ export async function listMine(user, from, to) {
   if (start > end) throw new HttpError(400, 'from must be before to');
 
   const info = await questionnaireInfo({});
-  const { areas, managerOf } = await areaManagers();
+  const { areas, areaOf, managerOf } = await areaLookup();
   const managed = areas.filter(ar => user.email && ar.manager?.email === user.email);
   const names = managed.map(ar => ar.name);
 
@@ -254,7 +264,7 @@ export async function listMine(user, from, to) {
     .lean();
 
   const audits = candidates.filter(a => isEvaluatedNow(a, user, managerOf));
-  return withManagers(audits.map(a => toListItem(a, info)), audits, managerOf);
+  return withCurrentValues(audits.map(a => toListItem(a, info)), audits, areaOf);
 }
 
 export async function getState(id, user) {

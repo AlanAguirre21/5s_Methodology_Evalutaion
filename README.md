@@ -17,8 +17,8 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
 - **Detalle de cada evaluación:** calificación, puntos por sección y todas las preguntas con su respuesta y desviación.
 - **Perfil** (`/perfil`): nombre, foto y rol del usuario. El rol es de solo lectura; un administrador puede cambiar el suyo tras confirmar.
 - **Historial** (`/historial`): evaluaciones completadas en las que el usuario fue la persona evaluada, en un periodo (un año por defecto), con gráfica de calificaciones.
-- **Usuarios** (`/usuarios`, solo administrador): lista de usuarios, cambio de rol y alta de usuarios.
-- **Áreas** (`/personas`, solo administrador): alta, edición y desactivación de áreas (nombre, centro de coste opcional y responsable con nombre y correo), con búsqueda. Las áreas no se eliminan: se desactivan tras confirmar y pueden volver a activarse. **Solo las áreas activas aparecen en los formularios.** Las áreas de `backend/app/seed/default_areas.json` se agregan solas al arrancar el backend y con `npm run seed` si no existen; las que ya existen no se modifican. Cada responsable de un área (las del archivo, y las que se agregan o editan en esta página) recibe un usuario con rol **Usuario** con su nombre y correo, si no tiene uno, para que vea en su **Historial** las evaluaciones en las que fue la persona evaluada.
+- **Usuarios** (`/usuarios`, solo administrador): lista de usuarios, cambio de rol, alta y eliminación de usuarios.
+- **Áreas** (`/personas`, solo administrador): alta, edición y eliminación de áreas (nombre, centro de coste opcional y responsable con nombre y correo), con búsqueda. Eliminar un área pide confirmación y no se puede deshacer; sus evaluaciones se conservan con el área, el centro de coste y la persona evaluada que tenían. Las áreas de `backend/app/seed/default_areas.json` se agregan al arrancar el backend o con `npm run seed` solo en una instalación nueva (sin áreas ni evaluaciones), así que las que se eliminan no vuelven. Cada responsable de un área (las que se agregan o editan en esta página) recibe un usuario con rol **Usuario** con su nombre y correo, si no tiene uno, para que vea en su **Historial** las evaluaciones en las que fue la persona evaluada.
 
 ## Tecnologías
 
@@ -166,17 +166,17 @@ Base: `http://localhost:3000/api`
 |--------|------|-------------|
 | POST   | `/auth/login` | Identificarse con `{ email }`; devuelve `{ token, user }` |
 | GET    | `/auth/me` | Usuario de la sesión actual |
-| GET    | `/users` | Lista de usuarios activos; con `?all=true`, también los desactivados (solo administrador) |
+| GET    | `/users` | Lista de usuarios (solo administrador) |
 | POST   | `/users` | Crear usuario `{ name, email, role? }`; con sesión, solo un administrador puede crear usuarios; solo un administrador puede asignar `role: "admin"` |
 | PATCH  | `/users/me` | Editar el perfil propio `{ name?, email?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
 | PATCH  | `/users/:id` | Editar el perfil de cualquier usuario `{ name?, email?, avatar? }` (solo administrador) |
 | PATCH  | `/users/:id/role` | Cambiar el rol `{ role }` (solo administrador; siempre debe quedar al menos uno) |
-| PATCH  | `/users/:id/active` | Activar o desactivar `{ active }` (solo administrador). Un usuario desactivado no puede iniciar sesión y sus evaluaciones se conservan. No se puede desactivar la cuenta de control, el propio usuario ni el último administrador |
+| DELETE | `/users/:id` | Eliminar usuario (solo administrador). Sus evaluaciones se conservan. No se puede eliminar la cuenta de control, el propio usuario, el último administrador ni el responsable de un área |
 | GET    | `/questionnaires` | Tipos de cuestionario disponibles |
-| GET    | `/areas` | Áreas activas, para los formularios; con `?all=true` un administrador recibe también las inactivas |
+| GET    | `/areas` | Áreas, para los formularios |
 | POST   | `/areas` | Crear área `{ name, costCenter?, manager: { name, email } }` (solo administrador) |
 | PATCH  | `/areas/:id` | Editar área `{ name?, costCenter?, manager? }` (solo administrador) |
-| PATCH  | `/areas/:id/active` | Activar o desactivar `{ active }` (solo administrador; las áreas no se eliminan) |
+| DELETE | `/areas/:id` | Eliminar área (solo administrador; sus evaluaciones se conservan) |
 | GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones de todos los usuarios, más recientes primero (solo administrador) |
 | GET    | `/export/key` | Clave de solo lectura para el enlace de Power BI (solo administrador) |
 | GET    | `/export/:key/piso.csv` · `/export/:key/oficina.csv` | Evaluaciones del tipo con los puntos por sección, para Power BI. No usa sesión: se autoriza con la clave del enlace. Devuelve CSV; con `.json` o `.html` al final devuelve JSON o una página con la tabla |

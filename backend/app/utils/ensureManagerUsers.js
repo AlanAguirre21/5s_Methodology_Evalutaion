@@ -1,6 +1,6 @@
 import User, { NAME_COLLATION, cleanEmail, cleanName } from '../models/User.js';
 import { ROLES } from '../constants/roles.js';
-import defaultAreas from '../seed/default_areas.json' with { type: 'json' };
+import Area from '../models/Area.js';
 
 // An area manager always has a user (role "user"), so they see the evaluations of their area in their history.
 // Returns { status: 'exists' | 'created' | 'linked' | 'skipped', name, takenBy? }
@@ -23,8 +23,9 @@ export async function ensureManagerUser(manager) {
 }
 
 export default async function ensureManagerUsers() {
+  const areas = await Area.find({ manager: { $ne: null } }).select('manager').lean();
   const results = [];
-  for (const { manager } of defaultAreas) results.push(await ensureManagerUser(manager));
+  for (const { manager } of areas) results.push(await ensureManagerUser(manager));
   return results;
 }
 

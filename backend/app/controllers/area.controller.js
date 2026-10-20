@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import Area, { AREA_COLLATION, toPublicArea } from '../models/Area.js';
 import { EMAIL_MAX_LENGTH, EMAIL_PATTERN, cleanEmail, cleanName } from '../models/User.js';
 import HttpError from '../utils/HttpError.js';
-import { ROLES } from '../constants/roles.js';
 import { ensureManagerUser } from '../utils/ensureManagerUsers.js';
 
 function validName(value) {
@@ -38,10 +37,8 @@ async function findArea(id) {
   return area;
 }
 
-// Active areas for the evaluation forms; ?all=true also returns the inactive ones (admins only)
 export async function list(req, res) {
-  const all = req.query.all === 'true' && req.user.role === ROLES.ADMIN;
-  const areas = await Area.find(all ? {} : { active: true }).collation(AREA_COLLATION).sort({ name: 1 }).lean();
+  const areas = await Area.find().collation(AREA_COLLATION).sort({ name: 1 }).lean();
   res.json(areas.map(toPublicArea));
 }
 
@@ -78,11 +75,9 @@ export async function update(req, res) {
   res.json({ ...toPublicArea(area), ...(manager !== undefined && { managerAccount: await ensureManagerUser(area.manager) }) });
 }
 
-// Areas are never deleted, so past evaluations keep pointing to them
-export async function setActive(req, res) {
-  if (typeof req.body?.active !== 'boolean') throw new HttpError(400, 'active must be true or false');
+// Past evaluations keep the area, cost center and evaluated person saved when they were made
+export async function remove(req, res) {
   const area = await findArea(req.params.id);
-  area.active = req.body.active;
-  await area.save();
-  res.json(toPublicArea(area));
+  await area.deleteOne();
+  res.status(204).end();
 }

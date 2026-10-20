@@ -6,6 +6,7 @@ import User from '../models/User.js';
 import ensureAdmin from '../utils/ensureAdmin.js';
 import ensureDefaultAreas from '../utils/ensureDefaultAreas.js';
 import ensureManagerUsers, { logManagerUsers } from '../utils/ensureManagerUsers.js';
+import removeInactive, { logRemoved } from '../utils/removeInactive.js';
 import floor from './floor.json' with { type: 'json' };
 import office from './office.json' with { type: 'json' };
 
@@ -44,6 +45,7 @@ try {
     }
   }
 
+  logRemoved(await removeInactive());
   await Area.syncIndexes();
   const addedAreas = await ensureDefaultAreas();
   console.log(addedAreas.length ? `Default areas added: ${addedAreas.join(', ')}` : 'Default areas: already registered');

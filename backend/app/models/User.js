@@ -15,7 +15,6 @@ const UserSchema = new Schema({
     email:  { type: String, trim: true, lowercase: true, maxlength: EMAIL_MAX_LENGTH, match: EMAIL_PATTERN },   // used to log in; missing in users from before it existed
     role:   { type: String, enum: Object.values(ROLES), default: ROLES.USER },
     avatar: { type: String, default: null, maxlength: AVATAR_MAX_LENGTH, match: AVATAR_PATTERN },
-    active: { type: Boolean, default: true },
     isSystem: { type: Boolean, default: false },   // the control user (Admin 01): always an admin, its email never changes, only it can edit itself
 }, { timestamps: true });
 
@@ -32,7 +31,6 @@ export const toPublicUser = u => ({
   role: u.role,
   avatar: u.avatar ?? null,
   isSystem: Boolean(u.isSystem),
-  active: u.active !== false,
   createdAt: u.createdAt,
 });
 

@@ -7,7 +7,6 @@ export async function login(req, res) {
 
   const user = await User.findOne({ email }).lean();
   if (!user) throw new HttpError(404, 'Correo no registrado');
-  if (!user.active) throw new HttpError(403, 'Tu usuario está desactivado. Pide a un administrador que lo active.');
 
   res.json({ token: String(user._id), user: toPublicUser(user) });
 }

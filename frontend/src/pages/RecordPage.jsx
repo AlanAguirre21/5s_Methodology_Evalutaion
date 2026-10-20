@@ -6,6 +6,8 @@ import StatusMessage from '../components/StatusMessage.jsx';
 import AuditTable from '../components/AuditTable.jsx';
 import { getExportKey, listAudits } from '../api/audits.js';
 import { listUsers } from '../api/users.js';
+import { listAreas } from '../api/areas.js';
+import { ROLES } from '../constants/roles.js';
 import { QUESTIONNAIRE_OPTIONS, AUDIT_COLUMNS, getQuestionnaireOption } from '../constants/questionnaires.js';
 import { PANEL, SEGMENTED, ACCENT_THEME } from '../constants/styles.js';
 import Button from '../components/Button.jsx';
@@ -30,11 +32,15 @@ export default function RecordPage() {
   const [exportError, setExportError] = useState(null);
   const [copied, setCopied]           = useState(false);
   const [users, setUsers]             = useState([]);
+  const [areas, setAreas]             = useState([]);
 
   useEffect(() => {
     let active = true;
-    listUsers({ all: true })
+    listUsers()
       .then(items => { if (active) setUsers(items); })
+      .catch(() => {});
+    listAreas()
+      .then(items => { if (active) setAreas(items); })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -65,15 +71,20 @@ export default function RecordPage() {
 
   const columns = AUDIT_COLUMNS[tab];
 
-  // The supervisor is chosen among the users (by id, so a renamed user keeps their audits); the rest, among the values in use
-  const options = useMemo(() => Object.fromEntries(columns.map(([key]) => [
-    key,
-    key === 'supervisor'
-      ? users.map(u => ({ value: u.id, label: u.name }))
-      : [...new Set((audits ?? []).map(a => a[key]).filter(Boolean))]
-          .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
-          .map(v => ({ value: v, label: v })),
-  ])), [audits, columns, users]);
+  // The area, cost center and evaluated person are chosen among the areas defined in Áreas, which the audits show
+  // with their current values; the supervisor, among the admins (by id, so a renamed user keeps their audits)
+  const options = useMemo(() => {
+    const valuesOf = list => [...new Set(list.filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))
+      .map(v => ({ value: v, label: v }));
+    const byKey = {
+      area:            valuesOf(areas.map(ar => ar.name)),
+      costCenter:      valuesOf(areas.map(ar => ar.costCenter)),
+      evaluatedPerson: valuesOf(areas.map(ar => ar.manager?.name)),
+      supervisor:      users.filter(u => u.role === ROLES.ADMIN).map(u => ({ value: u.id, label: u.name })),
+    };
+    return Object.fromEntries(columns.map(([key]) => [key, byKey[key] ?? valuesOf((audits ?? []).map(a => a[key]))]));
+  }, [areas, audits, columns, users]);
 
   const searchable = useMemo(() => new Map((audits ?? []).map(a => [
     a.auditId,
