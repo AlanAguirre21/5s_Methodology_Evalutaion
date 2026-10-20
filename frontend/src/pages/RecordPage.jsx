@@ -107,8 +107,9 @@ export default function RecordPage() {
   const start     = pageSize ? current * pageSize : 0;
   const rows      = pageSize ? filtered.slice(start, start + pageSize) : filtered;
 
+  // Straight to the backend over HTTP: Power BI doesn't accept the app's self-signed certificate
   const exportUrl = exportKey
-    ? `${window.location.origin}/api/export/${exportKey}/${tab}.csv`
+    ? `http://${window.location.hostname}:${import.meta.env.VITE_BACKEND_PORT}/api/export/${exportKey}/${tab}.csv`
     : null;
 
   async function handleCopy() {
