@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { ChevronLeft, ChevronRight, FileSpreadsheet, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, FileSpreadsheet, Search } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import AuditTable from '../components/AuditTable.jsx';
@@ -100,13 +100,28 @@ export default function RecordPage() {
     ? `${window.location.origin}/api/export/${exportKey}/${tab}.csv`
     : null;
 
-  async function handleCopy(e) {
-    e.preventDefault();
+  async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(exportUrl);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(exportUrl);
+      } else {
+        const input = document.createElement('textarea');
+        input.value = exportUrl;
+        input.setAttribute('readonly', '');
+        input.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        document.body.appendChild(input);
+        input.focus();
+        input.select();
+        input.setSelectionRange(0, exportUrl.length);
+        const ok = document.execCommand('copy');
+        input.remove();
+        if (!ok) throw new Error();
+      }
+      setExportError(null);
       setCopied(true);
     } catch {
-      setExportError('No se pudo copiar. Copia el enlace con el botón derecho.');
+      setCopied(false);
+      setExportError('No se pudo copiar el enlace.');
     }
   }
 
@@ -119,9 +134,9 @@ export default function RecordPage() {
         <FileSpreadsheet size={18} className="shrink-0 text-accent" />
         <span className="font-medium text-text">Power BI</span>
         {exportUrl && (
-          <a href={exportUrl} onClick={handleCopy} className="font-medium text-accent hover:underline">
-            Copiar enlace de {getQuestionnaireOption(tab).title} para Power BI
-          </a>
+          <Button variant="primary" size="sm" onClick={handleCopy}>
+            <Copy size={14} /> Copiar enlace de {getQuestionnaireOption(tab).title} para Power BI
+          </Button>
         )}
         {copied && <span role="status" className="text-text-muted">Copiado. En Power BI: Obtener datos → Web y pega el enlace.</span>}
         {exportError && <span role="alert" className="w-full text-danger">{exportError}</span>}
