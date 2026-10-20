@@ -77,7 +77,7 @@ async function loadAudit(id, user) {
 
   const audit = await Audit.findById(id);
   if (!audit) throw new HttpError(404, 'Audit not found');
-  if (user.role !== ROLES.ADMIN && !isEvaluated(audit, user)) {
+  if (user.role !== ROLES.ADMIN && !isEvaluatedNow(audit, user, (await areaManagers()).managerOf)) {
     throw new HttpError(403, 'Solo puedes consultar tus propias evaluaciones');
   }
 
@@ -151,16 +151,29 @@ function toListItem(a, info) {
 
 // The evaluated person shown in the record and the export is the current manager of the audit's area
 // (by reference, or by name in audits from before areas were registered); the name saved in the audit is the fallback.
-async function withAreaManagers(items, audits) {
+async function areaManagers() {
   const areas = await Area.find().select('name manager').lean();
   const byId = new Map(areas.map(ar => [String(ar._id), ar]));
   const byName = new Map(areas.map(ar => [ar.name.toLocaleLowerCase('es'), ar]));
-  const areaOf = a => (a.areaRef ? byId.get(String(a.areaRef)) : byName.get((a.area ?? a.department ?? '').toLocaleLowerCase('es')));
+  const managerOf = a => (a.areaRef ? byId.get(String(a.areaRef)) : byName.get((a.area ?? a.department ?? '').toLocaleLowerCase('es')))?.manager;
+  return { areas, managerOf };
+}
 
+function withManagers(items, audits, managerOf) {
   return items.map((item, i) => {
-    const manager = areaOf(audits[i])?.manager;
+    const manager = managerOf(audits[i]);
     return manager ? { ...item, evaluatedPerson: manager.name, evaluatedEmail: manager.email } : item;
   });
+}
+
+async function withAreaManagers(items, audits) {
+  const { managerOf } = await areaManagers();
+  return withManagers(items, audits, managerOf);
+}
+
+function isEvaluatedNow(audit, user, managerOf) {
+  const manager = managerOf(audit);
+  return manager ? Boolean(user.email) && manager.email === user.email : isEvaluated(audit, user);
 }
 
 export async function list(questionnaireKey) {
@@ -220,14 +233,28 @@ export async function listMine(user, from, to) {
   if (start > end) throw new HttpError(400, 'from must be before to');
 
   const info = await questionnaireInfo({});
+  const { areas, managerOf } = await areaManagers();
+  const managed = areas.filter(ar => user.email && ar.manager?.email === user.email);
+  const names = managed.map(ar => ar.name);
 
-  const audits = await Audit.find({ status: 'completed', ...evaluatedFilter(user), createdAt: { $gte: start, $lte: end } })
+  const candidates = await Audit.find({
+    status: 'completed',
+    createdAt: { $gte: start, $lte: end },
+    $or: [
+      ...evaluatedFilter(user).$or,
+      { areaRef: { $in: managed.map(ar => ar._id) } },
+      { areaRef: null, area: { $in: names } },
+      { areaRef: null, area: null, department: { $in: names } },
+    ],
+  })
+    .collation({ locale: 'es', strength: 2 })
     .select('-answers.photo')
     .sort({ createdAt: -1 })
     .limit(1000)
     .lean();
 
-  return audits.map(a => toListItem(a, info));
+  const audits = candidates.filter(a => isEvaluatedNow(a, user, managerOf));
+  return withManagers(audits.map(a => toListItem(a, info)), audits, managerOf);
 }
 
 export async function getState(id, user) {
