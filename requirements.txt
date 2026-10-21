@@ -14,9 +14,10 @@ mongodb-server        # MongoDB database, reachable through MONGO_URI
 # ============================================================
 # BACKEND  (backend/)
 # Install:  cd backend && npm install
-# Run:      npm run dev      (or: npm start)
-# Seed:     npm run seed     (loads questionnaires from app/seed)
-# Env (.env): MONGO_URI, PORT (default 3000), FRONTEND_ORIGIN
+# Run:      npm run dev      (or: npm start) — API on PORT (3011)
+# Seed:     npm run seed     (loads questionnaires and default areas from app/seed)
+# Env (.env): MONGO_URI, PORT (required, no default), CLIENT_ORIGIN
+#             optional: ADMIN_NAME, ADMIN_EMAIL (control account)
 # ============================================================
 
 # dependencies
@@ -32,8 +33,10 @@ nodemon==3.1.14
 # ============================================================
 # FRONTEND  (frontend/)
 # Install:  cd frontend && npm install
-# Run:      npm run dev      (Vite on http://localhost:5173, proxies /api to :3000)
+# Run:      npm run dev      (Vite on http://localhost:5175, proxies /api to :3011)
 # Build:    npm run build
+# Deploy:   pm2 start ecosystem.config.js   (requires PM2 and bash)
+# Camera:   the in-browser camera requires HTTPS (or localhost)
 # ============================================================
 
 # dependencies
