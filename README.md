@@ -1,24 +1,26 @@
 # 5S ZF — Evaluación 5S
 
-Aplicación web para realizar auditorías 5S (Seiri, Seiton, Seiso, Seiketsu, Shitsuke) en planta y en oficinas.
-El auditor responde preguntas de **Sí / No** en formato de chat; cada **No** requiere describir la desviación.
-Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y todas las evaluaciones quedan registradas para consulta.
+Aplicación web para auditorías 5S en planta y en oficinas. El auditor responde las preguntas en formato de chat y al terminar obtiene el puntaje, la calificación (0–100) y el resultado. Todas las evaluaciones quedan registradas.
 
 ## Funcionalidades
 
 - **Dos tipos de evaluación**
-  - **Piso de planta:** cuestionario organizado por las 5S.
-  - **Oficina:** cuestionario propio (limpieza y orden, visualización, funcionalidad, seguridad, artículos privados).
-- **Formulario de inicio:** en piso y en oficina solo se elige el **área**. Se muestran su centro de coste (si tiene) y su responsable, que es la persona evaluada.
-  - El **supervisor** es siempre el usuario que inició sesión; no se elige.
-- **Evaluación tipo chat:** una pregunta a la vez, agrupadas por sección, con barra de progreso. Una evaluación sin terminar puede continuarse después.
-- **Resultado:** puntos obtenidos, calificación 0–100 y nivel (p. ej. *Puntaje Objetivo*).
-- **Registro de evaluaciones** (`/registro`, solo administrador): pestañas Piso / Oficina, filtros por cada campo, 10 / 25 / 50 / 100 / todas las filas por página.
-- **Detalle de cada evaluación:** calificación, puntos por sección y todas las preguntas con su respuesta y desviación.
-- **Perfil** (`/perfil`): nombre, foto y rol del usuario. El rol es de solo lectura; un administrador puede cambiar el suyo tras confirmar.
-- **Historial** (`/historial`): evaluaciones completadas en las que el usuario fue la persona evaluada, en un periodo (un año por defecto), con gráfica de calificaciones.
-- **Usuarios** (`/usuarios`, solo administrador): lista de usuarios, cambio de rol, alta y eliminación de usuarios.
-- **Áreas** (`/personas`, solo administrador): alta, edición y eliminación de áreas (nombre, centro de coste opcional y responsable con nombre y correo), con búsqueda. Eliminar un área pide confirmación y no se puede deshacer; sus evaluaciones se conservan con el área, el centro de coste y la persona evaluada que tenían. Las áreas de `backend/app/seed/default_areas.json` se agregan al arrancar el backend o con `npm run seed` solo en una instalación nueva (sin áreas ni evaluaciones), así que las que se eliminan no vuelven. Cada responsable de un área (las que se agregan o editan en esta página) recibe un usuario con rol **Usuario** con su nombre y correo, si no tiene uno, para que vea en su **Historial** las evaluaciones en las que fue la persona evaluada.
+  - **Piso de planta:** preguntas **Sí / No** organizadas por las 5S. Cada **No** requiere una desviación.
+  - **Oficina:** empieza con una **foto del área**; después cada punto se califica *Cumple* (2), *Cumple parcialmente* (1) o *No cumple* (0, requiere desviación).
+- **Inicio:** solo se elige el **área**; se muestran su centro de coste y su responsable (la persona evaluada). El supervisor es el usuario de la sesión.
+- **Chat:** una pregunta a la vez, con barra de progreso. Una evaluación sin terminar se puede continuar después.
+- **Fotos:** se toman con la cámara o se suben desde el dispositivo (máx. 25 MB); se reducen a 1280 px en JPEG y se guardan en la evaluación. La vista de cámara del navegador solo funciona con **HTTPS** o en `localhost`; en HTTP, los teléfonos abren su app de cámara y las computadoras solo el selector de archivos.
+- **Resultado y detalle:** calificación, puntos por sección y cada respuesta con su desviación o foto.
+- **Registro** (`/registro`, administrador): pestañas Piso / Oficina, filtros por campo, paginación y el **enlace para Power BI** (CSV) de cada tipo.
+- **Historial** (`/historial`): evaluaciones en las que el usuario fue la persona evaluada, por periodo (un año por defecto), con gráfica.
+- **Perfil** (`/perfil`): nombre, foto y rol.
+- **Usuarios** (`/usuarios`, administrador): alta, cambio de rol y eliminación. Desde el inicio de sesión también es posible registrarse (`/usuarios/nuevo`).
+- **Áreas** (`/personas`, administrador): alta, edición y eliminación de áreas (nombre, centro de coste opcional y responsable). Las evaluaciones de un área eliminada se conservan. Cada responsable recibe un usuario con rol **Usuario** para ver su Historial.
+
+### Roles
+
+- **Administrador:** realiza evaluaciones y administra registros, usuarios y áreas.
+- **Usuario:** solo consulta su Historial y el detalle de sus evaluaciones.
 
 ## Tecnologías
 
@@ -28,169 +30,116 @@ Al terminar se obtiene el puntaje, la calificación (0–100) y el resultado, y 
 | Backend  | Node.js 24, Express 5, Mongoose 9 |
 | Base de datos | MongoDB |
 
-Las versiones exactas están en [requirements.txt](requirements.txt).
+Versiones exactas en [requirements.txt](requirements.txt).
 
 ## Estructura
 
 ```
 5S_Project/
-├── backend/
-│   ├── app/
-│   │   ├── app.js              # Servidor Express y rutas /api
-│   │   ├── config/db.js        # Conexión a MongoDB
-│   │   ├── constants/          # Campos del encabezado por tipo de evaluación
-│   │   ├── controllers/        # Manejo de cada endpoint
-│   │   ├── services/           # Lógica de auditorías y cálculo del resultado
-│   │   ├── models/             # Esquemas Mongoose (Audit, Questionnaire, CatalogEntry, Area)
-│   │   ├── routes/
-│   │   ├── middleware/         # Manejo de errores
-│   │   └── seed/               # Cuestionarios (floor.json, office.json), áreas por defecto (default_areas.json) y script de carga
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── pages/              # Inicio, formularios, chat, resultado, registros, detalle
-│   │   ├── components/         # Formularios, chat, layout, modales
-│   │   ├── api/                # Llamadas al backend
-│   │   ├── constants/          # Tipos de evaluación y campos (etiquetas)
-│   │   └── hooks/              # useAudit (estado de una evaluación)
-│   ├── public/                 # Íconos
-│   └── package.json
-├── ecosystem.config.js         # Configuración de PM2 para el despliegue
-├── requirements.txt
-└── README.md
+├── backend/app/
+│   ├── app.js          # Servidor Express y rutas /api
+│   ├── config/         # Conexión a MongoDB
+│   ├── constants/      # Roles y campos del encabezado
+│   ├── controllers/    # Endpoints
+│   ├── services/       # Lógica de evaluaciones y cálculo del resultado
+│   ├── models/         # Area, Audit, Questionnaire, Setting, User
+│   ├── routes/
+│   ├── middleware/     # Sesión y errores
+│   ├── utils/          # Tareas de arranque (admin, áreas, usuarios de responsables)
+│   └── seed/           # floor.json, office.json, default_areas.json y script de carga
+├── frontend/src/
+│   ├── pages/          # Inicio, formularios, chat, resultado, registro, usuarios, perfil
+│   ├── components/     # Formularios, chat (cámara y fotos), layout, modales
+│   ├── api/            # Llamadas al backend
+│   ├── auth/           # Sesión y rutas protegidas
+│   ├── constants/
+│   └── hooks/
+├── ecosystem.config.js # PM2
+└── requirements.txt
 ```
-
-## Requisitos
-
-- Node.js 24 o superior y npm 11 o superior
-- MongoDB (local o remoto)
 
 ## Instalación
 
-### 1. Backend
+Requiere Node.js 24+, npm 11+ y MongoDB.
 
 ```bash
-cd backend
-npm install
+cd backend && npm install
+cd ../frontend && npm install
 ```
 
-Crear el archivo `backend/.env` (no se sube al repositorio):
+Crear `backend/.env`:
 
 ```env
 MONGO_URI=mongodb://localhost:27017/5s_project
-PORT=3000
-CLIENT_ORIGIN=http://localhost:5173
+PORT=3011
+CLIENT_ORIGIN=http://localhost:5175
+# Opcional: ADMIN_NAME, ADMIN_EMAIL (cuenta de control)
 ```
 
-`PORT` es obligatorio: el backend no tiene puerto por defecto. `CLIENT_ORIGIN` es el origen del frontend permitido por CORS.
+`PORT` es obligatorio y debe coincidir con el proxy `/api` de [frontend/vite.config.js](frontend/vite.config.js).
 
-Cargar los cuestionarios en la base de datos:
-
-```bash
-npm run seed
-```
-
-### 2. Frontend
-
-```bash
-cd frontend
-npm install
-```
+Al arrancar, el backend crea la cuenta de control, agrega las áreas por defecto (solo en una instalación nueva) y crea los usuarios de los responsables. `npm run seed` en `backend` carga los cuestionarios.
 
 ## Ejecución
 
-En dos terminales:
-
 ```bash
-# Terminal 1 — API en http://localhost:3000
-cd backend
-npm run dev
-
-# Terminal 2 — aplicación en http://localhost:5173
-cd frontend
-npm run dev
+cd backend && npm run dev     # API en http://localhost:3011
+cd frontend && npm run dev    # App en http://localhost:5175 (también en la red local)
 ```
-
-En desarrollo, Vite redirige las peticiones `/api` al backend (puerto 3000).
-
-**Antes de la primera evaluación**, registra al menos un valor de cada campo en **Elementos de auditoría**; si no, los formularios no tienen opciones.
-
-### Scripts
 
 | Carpeta  | Comando         | Descripción |
 |----------|-----------------|-------------|
 | backend  | `npm run dev`   | API con recarga automática |
 | backend  | `npm start`     | API sin recarga |
-| backend  | `npm run seed`  | Carga los cuestionarios y las áreas por defecto de `app/seed` |
+| backend  | `npm run seed`  | Carga cuestionarios y áreas por defecto |
 | frontend | `npm run dev`   | Servidor de desarrollo |
-| frontend | `npm run build` | Compilación para producción (`frontend/dist`) |
-| frontend | `npm run lint`  | Revisión de código (oxlint) |
+| frontend | `npm run build` | Compilación a `frontend/dist` |
+| frontend | `npm run lint`  | oxlint |
 
 ## Despliegue (PM2)
 
-En el servidor, [ecosystem.config.js](ecosystem.config.js) levanta una sola aplicación de PM2 (`5s-evaluation-app`) que ejecuta el backend y `vite preview` (que sirve `frontend/dist`) juntos; si uno de los dos termina, se detiene el otro y PM2 reinicia la aplicación. `vite preview` escucha en todas las interfaces (`0.0.0.0`) y también redirige `/api` al backend.
-
-Requiere `bash` y PM2 instalados en el servidor.
+[ecosystem.config.js](ecosystem.config.js) ejecuta el backend y `vite preview` (sirve `frontend/dist` en `0.0.0.0:5175` y redirige `/api`) como una sola app, `5s-evaluation-app`. Requiere `bash` y PM2.
 
 ```bash
-# 1. Compilar el frontend
-cd frontend
-npm run build
-
-# 2. Iniciar desde la raíz del proyecto
-cd ..
-pm2 start ecosystem.config.js
+cd frontend && npm run build
+cd .. && pm2 start ecosystem.config.js
 ```
 
-Los puertos están en `backend/.env` (`PORT`) y en [frontend/vite.config.js](frontend/vite.config.js) (`server`, `preview` y el destino del proxy `/api`), que deben coincidir. Tras cambiar el frontend, volver a ejecutar `npm run build` y `pm2 restart 5s-evaluation-app`.
+Tras cambiar el frontend: `npm run build` y `pm2 restart 5s-evaluation-app`. Para usar la cámara del navegador en otros dispositivos, sirve la app por HTTPS (por ejemplo, con un proxy inverso y certificado interno).
 
 ## Cálculo del resultado
 
-- Cada respuesta **Sí** vale 1 punto; **No** vale 0 y requiere una desviación.
-- **Calificación** = puntos ÷ número de preguntas × 100 (redondeado).
-- El **resultado** es el nivel más alto cuyo mínimo de puntos se alcanza. Los niveles están en el campo `results` de cada cuestionario (`backend/app/seed/*.json`).
+- **Piso:** Sí = 1 punto, No = 0. **Oficina:** 2, 1 o 0 puntos. Las preguntas de foto no suman.
+- **Calificación** = puntos ÷ puntos máximos × 100 (redondeado).
+- **Resultado:** el nivel más alto cuyo mínimo se alcanza (campo `results` de cada cuestionario).
 
-### Cambiar las preguntas
-
-1. Editar `backend/app/seed/floor.json` u `office.json`.
-2. Incrementar `"version"` (las evaluaciones anteriores conservan su versión).
-3. Ejecutar `npm run seed` en `backend`.
-
-El cuestionario de piso debe tener exactamente las 5 secciones en orden (`seiri`, `seiton`, `seiso`, `seiketsu`, `shitsuke`); el de oficina puede tener secciones propias.
+Para cambiar las preguntas: editar `backend/app/seed/floor.json` u `office.json`, incrementar `"version"` (las evaluaciones anteriores conservan la suya) y ejecutar `npm run seed`. El cuestionario de piso debe tener las 5 secciones en orden (`seiri`, `seiton`, `seiso`, `seiketsu`, `shitsuke`).
 
 ## API
 
-Base: `http://localhost:3000/api`
+Base: `/api`. Salvo `/auth/login`, `POST /users` y `/export/:key/...`, todas las rutas requieren `Authorization: Bearer <token>`.
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST   | `/auth/login` | Identificarse con `{ email }`; devuelve `{ token, user }` |
-| GET    | `/auth/me` | Usuario de la sesión actual |
-| GET    | `/users` | Lista de usuarios (solo administrador) |
-| POST   | `/users` | Crear usuario `{ name, email, role? }`; con sesión, solo un administrador puede crear usuarios; solo un administrador puede asignar `role: "admin"` |
-| PATCH  | `/users/me` | Editar el perfil propio `{ name?, email?, avatar? }`; `avatar` es una imagen como data URL, o `null` para quitarla |
-| PATCH  | `/users/:id` | Editar el perfil de cualquier usuario `{ name?, email?, avatar? }` (solo administrador) |
-| PATCH  | `/users/:id/role` | Cambiar el rol `{ role }` (solo administrador; siempre debe quedar al menos uno) |
-| DELETE | `/users/:id` | Eliminar usuario (solo administrador). Sus evaluaciones se conservan. No se puede eliminar la cuenta de control, el propio usuario, el último administrador ni el responsable de un área |
-| GET    | `/questionnaires` | Tipos de cuestionario disponibles |
-| GET    | `/areas` | Áreas, para los formularios |
-| POST   | `/areas` | Crear área `{ name, costCenter?, manager: { name, email } }` (solo administrador) |
-| PATCH  | `/areas/:id` | Editar área `{ name?, costCenter?, manager? }` (solo administrador) |
-| DELETE | `/areas/:id` | Eliminar área (solo administrador; sus evaluaciones se conservan) |
-| GET    | `/audits?questionnaireKey=piso\|oficina` | Lista de evaluaciones de todos los usuarios, más recientes primero (solo administrador) |
-| GET    | `/export/key` | Clave de solo lectura para el enlace de Power BI (solo administrador) |
-| GET    | `/export/:key/piso.csv` · `/export/:key/oficina.csv` | Evaluaciones del tipo con los puntos por sección, para Power BI. No usa sesión: se autoriza con la clave del enlace. Devuelve CSV; con `.json` o `.html` al final devuelve JSON o una página con la tabla |
-| GET    | `/audits/mine?from=&to=` | Evaluaciones del periodo (por defecto, el último año): las completadas en las que el usuario fue la persona evaluada |
-| POST   | `/audits` | Iniciar evaluación `{ questionnaireKey, areaId }` (solo administrador) |
-| GET    | `/audits/:id` | Estado completo de una evaluación (un administrador o la persona evaluada) |
-| POST   | `/audits/:id/answers` | Responder `{ index, answer, deviation }` (solo administrador) |
+| POST   | `/auth/login` | `{ email }` → `{ token, user }` |
+| GET    | `/auth/me` | Usuario de la sesión |
+| GET    | `/users` | Lista de usuarios (admin) |
+| POST   | `/users` | Crear usuario `{ name, email, role? }`; solo un admin asigna roles |
+| PATCH  | `/users/me` | Perfil propio `{ name?, email?, avatar? }` |
+| PATCH  | `/users/:id` | Perfil de un usuario (admin) |
+| PATCH  | `/users/:id/role` | Cambiar rol `{ role }` (admin) |
+| DELETE | `/users/:id` | Eliminar usuario (admin); no la cuenta de control, el propio, el último admin ni un responsable |
+| GET    | `/questionnaires` | Cuestionarios disponibles |
+| GET    | `/areas` | Áreas |
+| POST · PATCH · DELETE | `/areas[/:id]` | Crear, editar o eliminar áreas (admin) |
+| GET    | `/audits?questionnaireKey=piso\|oficina` | Todas las evaluaciones (admin) |
+| GET    | `/audits/mine?from=&to=` | Evaluaciones completadas del usuario evaluado |
+| POST   | `/audits` | Iniciar `{ questionnaireKey, areaId }` (admin) |
+| GET    | `/audits/:id` | Estado de una evaluación (admin o persona evaluada) |
+| POST   | `/audits/:id/answers` | `{ index, answer, deviation? }` · `{ index, points, deviation? }` · `{ index, photo }` (admin) |
+| GET    | `/export/key` | Clave para el enlace de Power BI (admin) |
+| GET    | `/export/:key/piso.csv` · `oficina.csv` | Evaluaciones para Power BI (también `.json` y `.html`) |
 
-Salvo `/auth/login` y `POST /users`, todas las rutas requieren el encabezado `Authorization: Bearer <token>`.
-El inicio de sesión es solo **identificación** (solo el correo, sin contraseña): el token es el id del usuario.
-El correo es único y se compara sin distinguir mayúsculas. El nombre también es único (sin distinguir mayúsculas ni acentos). Los usuarios creados antes de que existiera el correo no pueden iniciar sesión hasta que un administrador les asigne uno en **Usuarios**.
-Siempre debe haber al menos un administrador: no se puede quitar el rol al último.
-La **cuenta de control** `Admin 01` (correo `admin@zf.test`) existe siempre: el backend (al arrancar) y `npm run seed` la crean si falta y la dejan activa, como administrador y con ese correo (`ADMIN_NAME` y `ADMIN_EMAIL` en `backend/.env` cambian los valores por defecto). Nadie más puede editarla: ni su perfil, ni su foto, ni su rol. Ella misma solo puede cambiar su nombre y su foto; su correo y su rol no se pueden cambiar.
+Errores: `{ "error": "mensaje" }` con el código HTTP correspondiente.
 
-Para iniciar una evaluación solo se envía el `areaId` de un área activa con responsable. El backend guarda en la evaluación el nombre del área (`area`), su centro de coste (`costCenter`) y el responsable (`evaluatedPerson` y su correo). Si el correo del responsable es de un usuario registrado, ese usuario ve la evaluación en su **Historial**. `supervisor` no se envía: el backend guarda el nombre del usuario de la sesión.
-
-Los errores se devuelven como `{ "error": "mensaje" }` con el código HTTP correspondiente.
+**Sesión:** solo con el correo, sin contraseña (el token es el id del usuario). Correo y nombre son únicos. Siempre queda al menos un administrador. La **cuenta de control** `Admin 01` (`admin@zf.test`) siempre existe como administrador; solo ella puede cambiar su nombre y foto.
