@@ -4,7 +4,8 @@ import { ChevronLeft, ChevronRight, Copy, FileSpreadsheet, Search } from 'lucide
 import PageContainer from '../components/layout/PageContainer.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import AuditTable from '../components/AuditTable.jsx';
-import { getExportKey, listAudits } from '../api/audits.js';
+import ConfirmModal from '../components/ui/ConfirmModal.jsx';
+import { deleteAudit, getExportKey, listAudits } from '../api/audits.js';
 import { listUsers } from '../api/users.js';
 import { listAreas } from '../api/areas.js';
 import { ROLES } from '../constants/roles.js';
@@ -33,6 +34,9 @@ export default function RecordPage() {
   const [copied, setCopied]           = useState(false);
   const [users, setUsers]             = useState([]);
   const [areas, setAreas]             = useState([]);
+  const [deleting, setDeleting]       = useState(null);
+  const [busy, setBusy]               = useState(false);
+  const [confirmError, setConfirmError] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -111,6 +115,20 @@ export default function RecordPage() {
     ? `${window.location.origin}/api/export/${exportKey}/${tab}.csv`
     : null;
 
+  async function remove(audit) {
+    setBusy(true);
+    setConfirmError(null);
+    try {
+      await deleteAudit(audit.auditId);
+      setAudits(list => list.filter(a => a.auditId !== audit.auditId));
+      setDeleting(null);
+    } catch (err) {
+      setConfirmError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleCopy() {
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -138,6 +156,20 @@ export default function RecordPage() {
 
   return (
     <PageContainer size="xl">
+      <ConfirmModal
+        open={Boolean(deleting)}
+        title="Eliminar evaluación"
+        confirmLabel="Eliminar"
+        busy={busy}
+        error={confirmError}
+        onConfirm={() => remove(deleting)}
+        onCancel={() => { setDeleting(null); setConfirmError(null); }}
+      >
+        ¿Seguro que quieres eliminar la evaluación de <strong>{deleting?.area || 'esta área'}</strong>
+        {deleting && ` del ${new Date(deleting.completedAt ?? deleting.createdAt).toLocaleDateString('es')}`}?
+        Se borrará del registro, del historial de la persona evaluada y de la exportación a Power BI. No se puede deshacer.
+      </ConfirmModal>
+
       <h1 className="text-2xl font-semibold text-text">Registro de evaluaciones</h1>
       <p className="mt-1 text-sm text-text-muted">Todas las evaluaciones realizadas, de la más reciente a la más antigua.</p>
 
@@ -221,7 +253,7 @@ export default function RecordPage() {
             </div>
 
             {rows.length > 0
-              ? <AuditTable questionnaireKey={tab} audits={rows} users={users} />
+              ? <AuditTable questionnaireKey={tab} audits={rows} users={users} onDelete={setDeleting} />
               : <p className={`py-12 text-center text-sm text-text-muted ${PANEL}`}>No hay evaluaciones que coincidan con la búsqueda y los filtros.</p>}
 
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">

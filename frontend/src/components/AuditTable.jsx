@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 import Button from './Button.jsx';
 import UserAvatar from './profile/UserAvatar.jsx';
 import PersonModal from './ui/PersonModal.jsx';
@@ -28,7 +28,9 @@ function StatusBadge({ audit }) {
 
 const PHOTO_COLUMN = { piso: 'evaluatedPerson', oficina: 'evaluatedPerson' };
 
-export default function AuditTable({ questionnaireKey, audits, users = [] }) {
+const DANGER_OUTLINE = 'neu-raised bg-white/60 text-danger border border-white/50 hover:bg-danger/10';
+
+export default function AuditTable({ questionnaireKey, audits, users = [], onDelete }) {
   const columns = AUDIT_COLUMNS[questionnaireKey];
   const theme = ACCENT_THEME;
   const photoColumn = PHOTO_COLUMN[questionnaireKey];
@@ -91,6 +93,11 @@ export default function AuditTable({ questionnaireKey, audits, users = [] }) {
                     <Link to={`/registro/${a.auditId}`} className="inline-flex items-center gap-0.5 font-medium text-text-muted hover:text-text">
                       Ver evaluación <ChevronRight size={16} />
                     </Link>
+                    {onDelete && canEvaluate && (
+                      <Button size="sm" onClick={() => onDelete(a)} aria-label="Eliminar evaluación" title="Eliminar" variant={DANGER_OUTLINE}>
+                        <Trash2 size={14} />
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>

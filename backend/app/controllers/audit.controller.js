@@ -17,6 +17,11 @@ export async function getState(req, res)  {
   res.json(await auditService.getState(req.params.id, req.user));
 }
 
+export async function remove(req, res) {
+  await auditService.remove(req.params.id);
+  res.status(204).end();
+}
+
 export async function answer(req, res) {
   const { index, answer, points, deviation, photo } = req.body;
   res.json(await auditService.answer(req.params.id, index, { answer, points, deviation, photo }, req.user));

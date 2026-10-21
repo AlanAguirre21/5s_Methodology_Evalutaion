@@ -272,6 +272,12 @@ export async function getState(id, user) {
   return buildState(audit, questionnaire);
 }
 
+export async function remove(id) {
+  if (!mongoose.isValidObjectId(id)) throw new HttpError(400, 'Invalid audit id');
+  const deleted = await Audit.findByIdAndDelete(id);
+  if (!deleted) throw new HttpError(404, 'Audit not found');
+}
+
 function requireDeviation(deviation, when) {
   if (typeof deviation !== 'string' || !deviation.trim()) throw new HttpError(400, `deviation is required when ${when}`);
   return deviation.trim();

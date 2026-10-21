@@ -9,6 +9,7 @@ router.post('/', requireRole(ROLES.ADMIN), ctrl.start);              // { questi
 router.get('/', requireRole(ROLES.ADMIN), ctrl.list);   // ?questionnaireKey=piso|oficina
 router.get('/mine', ctrl.listMine);        // ?from=&to= (ISO dates) — completed audits where the user was evaluated
 router.get('/:id', ctrl.getState);
+router.delete('/:id', requireRole(ROLES.ADMIN), ctrl.remove);
 router.post('/:id/answers', requireRole(ROLES.ADMIN), ctrl.answer);  // { index, answer, deviation? } | rating: { index, points, deviation? } | photo: { index, photo }
 
 export default router;
