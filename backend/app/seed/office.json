@@ -1,0 +1,83 @@
+{
+  "key": "oficina", "version": 2, "title": "Evaluación 5S", "answerType": "rating",
+  "sections": [
+    {
+      "key": "area_img",
+      "name": "Toma una fotografía del área a evaluar!",
+      "questions": [
+        { "text": "Toma una foto del área o súbela desde tu dispositivo", "type": "photo" }
+      ]
+    },
+    {
+      "key": "office_area",
+      "name": "¿Está limpia y ordenada el área?, ¿Todo está recogido a su alrededor?, ¿Hay orden en las mesas, estantes, etc.?",
+      "weight": 1,
+      "questions": [
+        { "text": "Limpieza y Orden 'área de oficina'" }
+      ]
+    },
+    {
+      "key": "conference_area",
+      "name": "¿Está limpia y ordenada el área?, ¿Todo está recogido a su alrededor?, ¿Hay orden en las mesas, estantes, etc.?",
+      "weight": 1,
+      "questions": [
+        { "text": "Limpieza y Orden 'área de oficinas de conferencia'" }
+      ]
+    },
+    {
+      "key": "kitchen_area",
+      "name": "¿Está limpia y ordenada el área?, ¿Todo está recogido a su alrededor?, ¿Está limpia la cafetera?, ¿Se siguen las reglas de limpieza?",
+      "weight": 1,
+      "questions": [
+        { "text": "Limpieza y Orden 'área de cocina'" }
+      ]
+    },
+    {
+      "key": "hallway_area",
+      "name": "¿Está limpia y ordenada el área?, ¿Todo está recogido a su alrededor?",
+      "weight": 1,
+      "questions": [
+        { "text": "Limpieza y Orden 'área de corredores'" }
+      ]
+    },
+    {
+      "key": "visualization_labeling",
+      "name": "¿Lo necesario está a la vista?, ¿Los objetos visibles están actualizados?, ¿Están etiquetados los gabinetes, estantes y carpetas?, ¿Existe una documentación adecuada?, ¿Existen listas para instalaciones, instrucciones, etc.?",
+      "weight": 1,
+      "questions": [
+        { "text": "Visualización y Etiquetado" }
+      ]
+    },
+    {
+      "key": "functionality",
+      "name": "¿Están los interiores de la oficina en buenas condiciones?, ¿Todo está completamente funcional?, ¿Su oficina está iluminada de manera adecuada?, ¿Los proyectores, impresoras, etc. funcionan correctamente?",
+      "weight": 1,
+      "questions": [
+        { "text": "Funcionalidad" }
+      ]
+    },
+    {
+      "key": "safety",
+      "name": "¿Las rutas de evacuación se encuentran libres de obstrucción?, ¿Se encuentran accesibles y en buenas condiciones los extintores?, ¿Están indicadas las rutas de evacuación?, ¿Los aparatos electrónicos están en buenas condiciones?, ¿Se realizan inspecciones de seguridad con regularidad?",
+      "weight": 1,
+      "questions": [
+        { "text": "Seguridad Ocupacional" }
+      ]
+    },
+    {
+      "key": "private_items",
+      "name": "¿El lugar de trabajo está libre de artículos privados?, ¿La oficina está libre de prendas de ropa esparcidas?, ¿Existen gabinetes para guardar artículos?",
+      "weight": 1,
+      "questions": [
+        { "text": "Artículos Privados" }
+      ]
+    }
+  ],
+  "results": [
+    { "min": 15, "text": "Puntaje Excelente" },
+    { "min": 13, "text": "Puntaje Bueno" },
+    { "min": 11, "text": "Puntaje Satisfactorio" },
+    { "min": 8, "text": "Suficiente" },
+    { "min": 0, "text": "Inadecuado" }
+  ]
+}

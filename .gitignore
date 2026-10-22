@@ -1,6 +1,10 @@
 # Carpetas
 node_modules/
+.vscode/
 
 # Credenciales privadas
 .env
 .env.*
+
+# Archivos
+5S_Evaluation_Video.md

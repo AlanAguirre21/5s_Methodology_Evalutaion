@@ -1,0 +1,10 @@
+[
+  { "key": "maintenance", "name": "Mantenimiento", "costCenter": "", "manager": { "name": "Saul Rojas", "email": "saul.rojas@zf.com" } },
+  { "key": "quality", "name": "Calidad", "costCenter": "", "manager": { "name": "Marcelo Gonzalez", "email": "marcelo.gonzalez3@zf.com" } },
+  { "key": "logistic", "name": "Logística", "costCenter": "", "manager": { "name": "Alejandro Torres", "email": "alejandro.torres@zf.com" } },
+  { "key": "cta_valves", "name": "Process Group CTA & Valves", "costCenter": "", "manager": { "name": "Manuel Orozco", "email": "manuel.orozco@zf.com" } },
+  { "key": "welding_piston", "name": "Process Group Welding and Piston Rod Assembly", "costCenter": "", "manager": { "name": "Luis Ochoa", "email": "ochoa.luis@zf.com" } },
+  { "key": "assembly_painting", "name": "Process Group Final Assembly & Painting", "costCenter": "", "manager": { "name": "Roman Jimenez", "email": "jimenez.roman@zf.com" } },
+  { "key": "ctt_2", "name": "Process Group CTT-2", "costCenter": "", "manager": { "name": "Hugo Ibarra", "email": "hugo.ibarra@zf.com" } },
+  { "key": "ctt_1", "name": "Process Group CTT-1", "costCenter": "", "manager": { "name": "Alberto Valdez", "email": "alberto.valdez2@zf.com" } }
+]
